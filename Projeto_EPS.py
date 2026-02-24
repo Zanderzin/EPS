@@ -15,6 +15,22 @@ st.set_page_config(
     layout="wide"
 )
 
+def gatekeeper_password():
+    st.session_state.setdefault("auth_ok", False)
+    if st.session_state["auth_ok"]:
+        return
+
+    st.title("🔒 Acesso restrito")
+    pwd = st.text_input("Informe a senha", type="password")
+    if st.button("Entrar"):
+        if pwd == st.secrets.get("PASSWORD", ""):
+            st.session_state["auth_ok"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Senha incorreta")
+
+gatekeeper_password()  # <- chama antes do restante do app
+
 # -- Upload (apenas CSV) --
 uploaded = st.sidebar.file_uploader("Faça upload do arquivo (CSV)", type=["csv"])
 
