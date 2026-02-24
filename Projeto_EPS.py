@@ -9,25 +9,65 @@ from datetime import datetime, date
 # =========================
 # Configuração da página
 # =========================
+def gatekeeper_password():
+    """
+    Porta de entrada por senha única:
+    - Se já autenticado, libera o app.
+    - Se não, mostra um formulário de senha com mensagens amigáveis.
+    - Sempre interrompe a execução (st.stop) enquanto não autenticado.
+    """
+    # Já autenticado nesta sessão?
+    if st.session_state.get("auth_ok", False):
+        return
+
+    # Verifica se a senha foi configurada em st.secrets
+    senha_configurada = st.secrets.get("PASSWORD", None)
+    if not senha_configurada:
+        st.title("🔒 Acesso restrito")
+        st.error(
+            "Configuração ausente: a senha do app não foi definida.\n\n"
+            "Peça ao responsável pelo deploy para configurar **`PASSWORD`** em *Settings → Secrets*."
+        )
+        st.stop()
+
+    # Controle simples de tentativas (opcional)
+    if "login_tries" not in st.session_state:
+        st.session_state.login_tries = 0
+
+    st.title("🔒 Acesso restrito")
+
+    with st.form("form_login", clear_on_submit=False):
+        pwd = st.text_input("Informe a senha", type="password", help="Acesso permitido apenas a usuários autorizados.")
+        entrar = st.form_submit_button("Entrar")
+
+    if entrar:
+        if not pwd:
+            st.warning("Digite a senha para continuar.")
+        elif pwd == senha_configurada:
+            st.session_state["auth_ok"] = True
+            st.session_state.login_tries = 0
+            st.success("Acesso liberado! Carregando o dashboard…")
+            st.experimental_rerun()
+        else:
+            st.session_state.login_tries += 1
+            # Mensagens amigáveis sem código/trace
+            if st.session_state.login_tries == 1:
+                st.error("Senha incorreta. Tente novamente.")
+            elif st.session_state.login_tries < 5:
+                st.error(f"Senha incorreta. Tentativas: {st.session_state.login_tries}/5.")
+                st.caption("Dica: verifique maiúsculas/minúsculas ou copie/cole a senha com cuidado.")
+            else:
+                st.error("Muitas tentativas falhas. Aguarde um momento e tente novamente.")
+                st.caption("Se o problema persistir, contate o responsável pelo dashboard.")
+
+    # Enquanto não autenticado, interrompe o app aqui
+    st.stop()
+
 st.set_page_config(
     page_title="Dashboard EPS - Prefixos",
     page_icon="📊",
     layout="wide"
 )
-
-def gatekeeper_password():
-    st.session_state.setdefault("auth_ok", False)
-    if st.session_state["auth_ok"]:
-        return
-
-    st.title("🔒 Acesso restrito")
-    pwd = st.text_input("Informe a senha", type="password")
-    if st.button("Entrar"):
-        if pwd == st.secrets.get("PASSWORD", ""):
-            st.session_state["auth_ok"] = True
-            st.experimental_rerun()
-        else:
-            st.error("Senha incorreta")
 
 gatekeeper_password()  # <- chama antes do restante do app
 
