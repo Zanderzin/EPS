@@ -43,8 +43,8 @@ top_n = st.sidebar.number_input("Qtde. de Prefixos no gráfico", min_value=1, ma
 
 # Cores do donut: primeira fatia = "precisam", segunda = "não precisam"
 st.sidebar.subheader("🎨 Cores do gráfico de donut")
-cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e74c3c")   # vermelho
-cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#2ecc71")  # verde
+cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
+cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
 
 # =========================
 # Funções utilitárias
@@ -63,7 +63,18 @@ def preparar_df(df: pd.DataFrame):
     df["Data_Ultimo_Eps"] = pd.to_datetime(df["Data_Ultimo_Eps"], dayfirst=True, errors="coerce")
     return df
 
-def donut_eps_plotly(porcentagem, cor_precisam="#e74c3c", cor_nao_precisam="#2ecc71"):
+def donut_eps_plotly(
+    porcentagem, 
+    filtro_atual="Todos",
+    cor_precisam="#e72914", 
+    cor_nao_precisam="#0fe267"
+):
+    # Converte filtro para texto amigável
+    if filtro_atual == "Todos":
+        filtro_texto = "Geral"
+    else:
+        filtro_texto = str(filtro_atual)
+
     fig = go.Figure(data=[go.Pie(
         labels=["Precisam fazer", f"Vencem até {data_limite}"],
         values=[porcentagem, 100 - porcentagem],
@@ -71,14 +82,26 @@ def donut_eps_plotly(porcentagem, cor_precisam="#e74c3c", cor_nao_precisam="#2ec
         sort=False,
         direction="clockwise",
         marker=dict(colors=[cor_precisam, cor_nao_precisam], line=dict(color="white", width=2)),
-        textinfo="percent",
-        textfont_size=16
+        #textinfo="none",   # <<<<<< TIRA PORCENTAGENS DAS FATIAS
+        textfont_size=18,
+        hoverinfo="label+percent"
     )])
 
     fig.update_layout(
         title=f"Percentual de pessoas que precisam fazer o EPS até {data_limite.strftime('%d/%m/%Y')}",
         template="plotly_white",
         height=500,
+
+        # Apenas o nome do filtro no centro
+        annotations=[
+            dict(
+                text=filtro_texto,
+                x=0.5, y=0.5,
+                showarrow=False,
+                font=dict(size=30, color="white", family="Arial Black")
+            )
+        ],
+
         margin=dict(l=40, r=40, t=60, b=40)
     )
     return fig
@@ -185,7 +208,7 @@ def barras_prefixo_plotly_gradiente(
         if mask.any():
             import numpy as _np
             pos = int(_np.flatnonzero(mask)[0])
-            line_colors[pos] = "#7cff02"  # destaque vermelho
+            line_colors[pos] = "#00ff00"  # destaque vermelho
             line_widths[pos] = 3
 
     fig.update_traces(marker_line_color=line_colors, marker_line_width=line_widths)
@@ -305,7 +328,11 @@ else:
 
     # ===== Gráfico de Donut =====
     st.subheader("🍩 Percentual geral")
-    fig_donut = donut_eps_plotly(porcentagem, cor_precisam=cor_precisam, cor_nao_precisam=cor_nao_precisam)
+    fig_donut = donut_eps_plotly(
+    porcentagem,
+    filtro_atual=prefixo_escolhido,   # 👈 agora mostra o filtro selecionado
+    cor_precisam=cor_precisam,
+    cor_nao_precisam=cor_nao_precisam)
     st.plotly_chart(
         fig_donut,
         use_container_width=True,
@@ -417,7 +444,5 @@ else:
 
     st.info("""
 **Observações**
-- Entrada **somente CSV** (com detecção de cabeçalho e fallback de encoding).
-- A opção “Remover o cabeçalho extra” remove **apenas a primeira linha** após leitura.
-- Datas inválidas em `Data_Ultimo_Eps` viram `NaT` e **não** entram no filtro “antes”.
+- Entrada **somente CSV**.
 """)

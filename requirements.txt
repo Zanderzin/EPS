@@ -1,0 +1,5 @@
+streamlit>=1.31
+pandas>=2.1
+numpy>=1.26
+plotly>=5.18
+kaleido>=0.2.1         # para exportar PNG com fig.to_image/fig.write_image        # você gera Excel para download (pandas.ExcelWriter)
