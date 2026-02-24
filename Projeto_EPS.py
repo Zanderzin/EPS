@@ -47,7 +47,7 @@ def gatekeeper_password():
             st.session_state["auth_ok"] = True
             st.session_state.login_tries = 0
             st.success("Acesso liberado! Carregando o dashboard…")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.session_state.login_tries += 1
             # Mensagens amigáveis sem código/trace
