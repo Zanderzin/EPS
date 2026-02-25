@@ -179,7 +179,7 @@ def donut_eps_plotly(
                 text=filtro_texto,
                 x=0.5, y=0.5,
                 showarrow=False,
-                font=dict(size=30, color="white", family="Arial Black")
+                font=dict(size=30, color="#7c7c7c", family="Arial Black")
             )
         ],
 
@@ -522,6 +522,94 @@ else:
             )
         except Exception as e:
             st.error(f"Erro ao gerar Excel único: {e}")
+
+    # =========================
+# 🔎 Buscador por UOR (apenas do Prefixo 8553)
+    # =========================
+    st.divider()
+    st.subheader("🔎 Consultar pendências por UOR (Prefixo 8553)")
+
+    # 1) Conjunto de UORs do Prefixo 8553, a partir do DataFrame original (não filtrado por data)
+    #    - Trata valores nulos como "NA" apenas para exibição
+    def _fmt_uor(x):
+        return "NA" if pd.isna(x) or str(x).strip() == "" else str(x)
+
+    # Subconjunto das linhas do prefixo 8553
+    mask_pref_8553 = (dados["Prefixo"].astype(str) == "8553")
+    uors_8553 = dados.loc[mask_pref_8553, "Uor"]
+
+    if uors_8553.empty:
+        st.warning("Não há UORs cadastradas para o Prefixo 8553 nos dados carregados.")
+    else:
+        uors_unicas = sorted({_fmt_uor(x) for x in uors_8553.unique()})
+
+        # 2) Selectbox pesquisável de UORs do Prefixo 8553
+        uor_escolhida = st.selectbox(
+            "Selecione a UOR (apenas Prefixo 8553)",
+            options=uors_unicas,
+            index=0,
+            help="Digite para buscar e selecione a UOR desejada (apenas UORs do Prefixo 8553)."
+        )
+
+        # 3) Filtrar as PENDÊNCIAS (dados_antes) por Prefixo 8553 e pela UOR selecionada
+        mask_pend_pref = (dados_antes["Prefixo"].astype(str) == "8553")
+
+        if uor_escolhida == "NA":
+            mask_pend_uor = dados_antes["Uor"].isna()
+        else:
+            mask_pend_uor = (dados_antes["Uor"].astype(str) == uor_escolhida)
+
+        df_uor_pend = dados_antes[mask_pend_pref & mask_pend_uor].copy()
+
+        # 4) KPIs simples + tabela
+        col_k1, col_k2, col_k3 = st.columns(3)
+        col_k1.metric("Prefixo", "8553")
+        col_k2.metric("UOR selecionada", uor_escolhida)
+        col_k3.metric("Pendências na UOR", f"{len(df_uor_pend):,}".replace(",", "."))
+
+        st.dataframe(df_uor_pend, use_container_width=True)
+
+        # 5) Downloads com nome dinâmico "<UOR> Pendentes"
+        #    - Sanitiza nome para arquivo (tira barras, dois-pontos etc.)
+        def _sanitize_filename(s: str) -> str:
+            bad = r'\/:*?"<>|'
+            out = "".join("_" if ch in bad else ch for ch in s)
+            return out.strip() or "Pendentes"
+
+        nome_base = _sanitize_filename(f"{uor_escolhida} Pendentes")
+
+        col_d1, col_d2 = st.columns(2)
+
+        with col_d1:
+            try:
+                csv_bytes = df_uor_pend.to_csv(index=False).encode("utf-8-sig")
+                st.download_button(
+                    label="🧾 Baixar CSV (UOR selecionada)",
+                    data=csv_bytes,
+                    file_name=f"{nome_base}.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"Erro ao gerar CSV da UOR: {e}")
+
+        with col_d2:
+            try:
+                buf_xlsx = io.BytesIO()
+                with pd.ExcelWriter(buf_xlsx, engine="openpyxl") as writer:
+                    # Nome da aba também usa a UOR (limite Excel = 31 caracteres)
+                    aba = (uor_escolhida if uor_escolhida else "Pendentes")[:31]
+                    df_uor_pend.to_excel(writer, sheet_name=aba, index=False)
+                buf_xlsx.seek(0)
+                st.download_button(
+                    label="📗 Baixar Excel (UOR selecionada)",
+                    data=buf_xlsx,
+                    file_name=f"{nome_base}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"Erro ao gerar Excel da UOR: {e}")
 
     st.info("""
 **Observações**
