@@ -157,7 +157,7 @@ def donut_eps_plotly(
         filtro_texto = str(filtro_atual)
 
     fig = go.Figure(data=[go.Pie(
-        labels=["Precisam fazer", f"Vencem até {data_limite}"],
+        labels=["Precisam fazer", f"Vencem até {data_limite.strftime('%d/%m')}"],
         values=[porcentagem, 100 - porcentagem],
         hole=0.6,
         sort=False,
@@ -280,7 +280,7 @@ def barras_prefixo_plotly_gradiente(
         cliponaxis=False
     )
 
-    default_line = "white" if tema != "plotly_dark" else "rgba(255,255,255,0.6)"
+    default_line = "#7c7c7c" if tema != "plotly_dark" else "rgba(255,255,255,0.6)"
     line_colors = [default_line] * n
     line_widths = [1.2] * n
 
@@ -500,7 +500,7 @@ else:
     st.divider()
     st.subheader("⬇️ Baixar dados das pendências")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     # 1) Excel com uma aba por Prefixo (apenas pendentes)
     with col1:
@@ -524,21 +524,6 @@ else:
 
     # 2) CSV único com todas as pendências
     with col2:
-        st.caption("CSV único com todas as pendências.")
-        try:
-            csv_bytes = dados_antes.to_csv(index=False).encode("utf-8-sig")
-            st.download_button(
-                label="🧾 Baixar CSV (pendentes)",
-                data=csv_bytes,
-                file_name="dados_pendentes.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-        except Exception as e:
-            st.error(f"Erro ao gerar CSV: {e}")
-
-    # 3) Excel único (uma aba) com todas as pendências
-    with col3:
         st.caption("Excel único (uma aba) com todas as pendências.")
         try:
             buf_xlsx_single = io.BytesIO()
@@ -594,6 +579,82 @@ else:
         col_a.dataframe(totais.rename("Total"), use_container_width=True)
         col_b.write("**Pendentes por Prefixo**")
         col_b.dataframe(antes.rename("Pendentes"), use_container_width=True)
+
+        st.markdown("### 📌 Meta: **90% pendentes** por Prefixo")
+        meta_pct = 0.90
+
+        # --- Monta DF alinhado por Prefixo ---
+        idx = sorted(totais.index.union(antes.index), key=lambda x: str(x))
+        dfm = pd.DataFrame(index=idx)
+        dfm["Total"] = totais.reindex(idx).fillna(0).astype(int)
+        dfm["Pendentes"] = antes.reindex(idx).fillna(0).astype(int)
+        dfm["%Pendentes"] = (dfm["Pendentes"] / dfm["Total"] * 100).replace([np.inf, -np.inf], 0).fillna(0)
+
+        # --- Método de cálculo ---
+        metodo = st.radio(
+            "Como calcular a coluna **Faltam para 90%**?",
+            ["Sempre para cima (ceil)", "Compensado (maior resto)"],
+            horizontal=True
+        )
+
+        # Quantidade‑meta (90% do total, arredondando para cima por prefixo)
+        dfm["Meta_90%_Qtd"] = np.ceil(meta_pct * dfm["Total"]).astype(int)
+
+        # Base "faltam" por ceil (sempre não-negativo)
+        dfm["Faltam_Ceil"] = (dfm["Meta_90%_Qtd"] - dfm["Pendentes"]).clip(lower=0).astype(int)
+
+        if metodo == "Sempre para cima (ceil)":
+            df_out = dfm[["Total", "Pendentes", "%Pendentes", "Meta_90%_Qtd", "Faltam_Ceil"]].rename(
+                columns={"Faltam_Ceil": "Faltam para 90% (ceil)"}
+            )
+        else:
+            # --- Compensado (método do maior resto / Hamilton) ---
+            # Ideal "faltam" (pode ter fração) e zera negativos
+            ideal = meta_pct * dfm["Total"] - dfm["Pendentes"]
+            ideal_pos = ideal.clip(lower=0)
+
+            base = np.floor(ideal_pos).astype(int)         # parte inteira
+            resto = (ideal_pos - base)                     # fração 0..1
+
+            # Total inteiro a alocar = arredondamento do total ideal
+            total_target = int(round(ideal_pos.sum()))
+            to_allocate = max(0, total_target - int(base.sum()))
+
+            # Distribui +1 pelos maiores restos
+            extra = pd.Series(0, index=dfm.index, dtype=int)
+            if to_allocate > 0:
+                # ordena por resto desc; em empate, mantém ordem estável
+                ordem = resto.sort_values(ascending=False).index.tolist()
+                for i, idx_pref in enumerate(ordem):
+                    if i >= to_allocate:
+                        break
+                    extra.loc[idx_pref] += 1
+
+            faltam_comp = (base + extra).astype(int)
+
+            # Garante não-negativo
+            faltam_comp = faltam_comp.clip(lower=0)
+
+            df_out = dfm[["Total", "Pendentes", "%Pendentes"]].copy()
+            df_out["Meta_90%_Qtd (compensado)"] = (df_out["Pendentes"] + faltam_comp).astype(int)
+            df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
+
+        # Formatação e exibição
+        formatadores = {
+            "%Pendentes": "{:.1f}%"
+        }
+        st.dataframe(
+            df_out.style.format(formatadores),
+            use_container_width=True
+        )
+
+        # Pequena legenda para explicar os métodos
+        with st.expander("ℹ️ Entenda os métodos"):
+            st.markdown(
+                "- **Sempre para cima (ceil):** calcula `ceil(90%×Total) − Pendentes` por Prefixo (mínimo 0).\n"
+                "- **Compensado (maior resto):** soma os ideais por Prefixo, usa a parte inteira e distribui os `+1` pelos **maiores restos**, "
+                "reduzindo distorções em Prefixos muito pequenos."
+            )
     st.info("""
 **Observações**
 - Entrada **somente CSV**.
