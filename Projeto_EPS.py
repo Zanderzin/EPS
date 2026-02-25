@@ -162,7 +162,7 @@ def donut_eps_plotly(
         hole=0.6,
         sort=False,
         direction="clockwise",
-        marker=dict(colors=[cor_precisam, cor_nao_precisam], line=dict(color="white", width=2)),
+        marker=dict(colors=[cor_precisam, cor_nao_precisam], line=dict(color="#7c7c7c", width=2)),
         #textinfo="none",   # <<<<<< TIRA PORCENTAGENS DAS FATIAS
         textfont_size=18,
         hoverinfo="label+percent"
@@ -424,112 +424,6 @@ else:
     )
 
     st.divider()
-
-    # ===== Percentual por Prefixo =====
-    st.subheader("🏷️ Percentual por Prefixo")
-
-    if "Prefixo" not in dados.columns:
-        st.error("Coluna 'Prefixo' não encontrada no CSV.")
-        st.stop()
-
-    totais = dados["Prefixo"].value_counts()
-    antes = dados_antes["Prefixo"].value_counts()
-    porc_por_prefixo = (antes / totais * 100).fillna(0).sort_index()
-
-    fig_barras = barras_prefixo_plotly_gradiente(
-        porc_por_prefixo=porc_por_prefixo,
-        top_n=top_n,
-        tema="plotly_white",
-        prefixo_destacar=None if prefixo_escolhido == "Todos" else prefixo_escolhido,
-        ensure_visible=True
-    )
-    st.plotly_chart(
-        fig_barras,
-        use_container_width=True,
-        config={
-            "toImageButtonOptions": {"format": "png", "filename": "barras_prefixo", "scale": 2},
-            "displaylogo": False
-        }
-    )
-
-    st.divider()
-
-    # ===== Tabelas auxiliares =====
-    with st.expander("📋 Tabela: Percentual pendente por Prefixo"):
-        st.dataframe(porc_por_prefixo.round(2).rename("Porcentagem (%)"), use_container_width=True)
-
-    with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
-        col_a, col_b = st.columns(2)
-        col_a.write("**Totais por Prefixo**")
-        col_a.dataframe(totais.rename("Total"), use_container_width=True)
-        col_b.write("**Pendentes por Prefixo**")
-        col_b.dataframe(antes.rename("Pendentes"), use_container_width=True)
-
-    st.divider()
-    st.subheader("⬇️ Baixar dados das pendências")
-
-    col1, col2, col3 = st.columns(3)
-
-    # 1) Excel com uma aba por Prefixo (apenas pendentes)
-    with col1:
-        st.caption("Excel com uma planilha por Prefixo (apenas pendentes).")
-        try:
-            buf_xlsx_multi = io.BytesIO()
-            with pd.ExcelWriter(buf_xlsx_multi, engine="openpyxl") as writer:
-                for pref, grp in dados_antes.groupby("Prefixo", dropna=False):
-                    sheet = "NA" if pd.isna(pref) else str(pref)[:31]
-                    grp.to_excel(writer, sheet_name=sheet, index=False)
-            buf_xlsx_multi.seek(0)
-            st.download_button(
-                label="📘 Baixar Excel (1 aba por Prefixo)",
-                data=buf_xlsx_multi,
-                file_name="dados_pendentes_por_prefixo.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
-            )
-        except Exception as e:
-            st.error(f"Erro ao gerar Excel por Prefixo: {e}")
-
-    # 2) CSV único com todas as pendências
-    with col2:
-        st.caption("CSV único com todas as pendências.")
-        try:
-            csv_bytes = dados_antes.to_csv(index=False).encode("utf-8-sig")
-            st.download_button(
-                label="🧾 Baixar CSV (pendentes)",
-                data=csv_bytes,
-                file_name="dados_pendentes.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-        except Exception as e:
-            st.error(f"Erro ao gerar CSV: {e}")
-
-    # 3) Excel único (uma aba) com todas as pendências
-    with col3:
-        st.caption("Excel único (uma aba) com todas as pendências.")
-        try:
-            buf_xlsx_single = io.BytesIO()
-            with pd.ExcelWriter(buf_xlsx_single, engine="openpyxl") as writer:
-                dados_antes.to_excel(writer, sheet_name="Pendentes", index=False)
-            buf_xlsx_single.seek(0)
-            st.download_button(
-                label="📗 Baixar Excel (uma aba)",
-                data=buf_xlsx_single,
-                file_name="dados_pendentes.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
-            )
-        except Exception as e:
-            st.error(f"Erro ao gerar Excel único: {e}")
-
-    # =========================
-# 🔎 Buscador por UOR (apenas do Prefixo 8553)
-    # =========================
-    # =========================
-# 🔎 Consultar pendências por UOR (apenas Prefixo 8553) – Excel somente
-# =========================
-    st.divider()
     st.subheader("🔎 Consultar pendências por UOR (Prefixo 8553)")
 
     # Helpers de sanitização para Excel
@@ -603,6 +497,103 @@ else:
         except Exception as e:
             st.error(f"Erro ao gerar Excel da UOR: {e}")
 
+    st.divider()
+    st.subheader("⬇️ Baixar dados das pendências")
+
+    col1, col2, col3 = st.columns(3)
+
+    # 1) Excel com uma aba por Prefixo (apenas pendentes)
+    with col1:
+        st.caption("Excel com uma planilha por Prefixo (apenas pendentes).")
+        try:
+            buf_xlsx_multi = io.BytesIO()
+            with pd.ExcelWriter(buf_xlsx_multi, engine="openpyxl") as writer:
+                for pref, grp in dados_antes.groupby("Prefixo", dropna=False):
+                    sheet = "NA" if pd.isna(pref) else str(pref)[:31]
+                    grp.to_excel(writer, sheet_name=sheet, index=False)
+            buf_xlsx_multi.seek(0)
+            st.download_button(
+                label="📘 Baixar Excel (1 aba por Prefixo)",
+                data=buf_xlsx_multi,
+                file_name="dados_pendentes_por_prefixo.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Erro ao gerar Excel por Prefixo: {e}")
+
+    # 2) CSV único com todas as pendências
+    with col2:
+        st.caption("CSV único com todas as pendências.")
+        try:
+            csv_bytes = dados_antes.to_csv(index=False).encode("utf-8-sig")
+            st.download_button(
+                label="🧾 Baixar CSV (pendentes)",
+                data=csv_bytes,
+                file_name="dados_pendentes.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Erro ao gerar CSV: {e}")
+
+    # 3) Excel único (uma aba) com todas as pendências
+    with col3:
+        st.caption("Excel único (uma aba) com todas as pendências.")
+        try:
+            buf_xlsx_single = io.BytesIO()
+            with pd.ExcelWriter(buf_xlsx_single, engine="openpyxl") as writer:
+                dados_antes.to_excel(writer, sheet_name="Pendentes", index=False)
+            buf_xlsx_single.seek(0)
+            st.download_button(
+                label="📗 Baixar Excel (uma aba)",
+                data=buf_xlsx_single,
+                file_name="dados_pendentes.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Erro ao gerar Excel único: {e}")
+
+    # ===== Percentual por Prefixo =====
+    st.subheader("🏷️ Percentual por Prefixo")
+
+    if "Prefixo" not in dados.columns:
+        st.error("Coluna 'Prefixo' não encontrada no CSV.")
+        st.stop()
+
+    totais = dados["Prefixo"].value_counts()
+    antes = dados_antes["Prefixo"].value_counts()
+    porc_por_prefixo = (antes / totais * 100).fillna(0).sort_index()
+
+    fig_barras = barras_prefixo_plotly_gradiente(
+        porc_por_prefixo=porc_por_prefixo,
+        top_n=top_n,
+        tema="plotly_white",
+        prefixo_destacar=None if prefixo_escolhido == "Todos" else prefixo_escolhido,
+        ensure_visible=True
+    )
+    st.plotly_chart(
+        fig_barras,
+        use_container_width=True,
+        config={
+            "toImageButtonOptions": {"format": "png", "filename": "barras_prefixo", "scale": 2},
+            "displaylogo": False
+        }
+    )
+
+    st.divider()
+
+    # ===== Tabelas auxiliares =====
+    with st.expander("📋 Tabela: Percentual pendente por Prefixo"):
+        st.dataframe(porc_por_prefixo.round(2).rename("Porcentagem (%)"), use_container_width=True)
+
+    with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
+        col_a, col_b = st.columns(2)
+        col_a.write("**Totais por Prefixo**")
+        col_a.dataframe(totais.rename("Total"), use_container_width=True)
+        col_b.write("**Pendentes por Prefixo**")
+        col_b.dataframe(antes.rename("Pendentes"), use_container_width=True)
     st.info("""
 **Observações**
 - Entrada **somente CSV**.
