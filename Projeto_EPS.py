@@ -96,6 +96,8 @@ st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 
 gatekeeper_password()  # <- chama antes do restante do app
 
+st.sidebar.title("⚙️ Configurações de análise")
+
 # -- Upload (apenas CSV) --
 uploaded = st.sidebar.file_uploader("Faça upload do arquivo (CSV)", type=["csv"])
 
@@ -111,6 +113,9 @@ if uploaded is None:
 
 # Opções de leitura
 #drop_first_line = st.sidebar.checkbox("Remover o cabeçalho extra (apenas se necessário)", value=False)
+#declarando a sidebar para ela aparecer desde o início, mesmo antes do upload, para evitar "pulos" na interface quando o arquivo for carregado.
+
+st.sidebar.title("⚙️ Configurações de análise")
 
 # Data-limite (default: 30/06/2025)
 data_limite = st.sidebar.date_input(
