@@ -29,10 +29,9 @@ a[href*="github.com"] {display: none !important;}
 """
 st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 
-# =========================
-# Defaults (usados antes do upload)
-# =========================
-DEFAULT_DATA_LIMITE = date(2025, 6, 30)
+# Defaults (UI x Cálculo)
+DEFAULT_DATA_LIMITE_UI = date(2026, 6, 30)     # o que APARECE para o usuário
+DEFAULT_DATA_LIMITE_CALC = date(2025, 6, 30)   # o que é usado nos CÁLCULOS
 DEFAULT_TOP_N = 44
 
 # =========================
@@ -41,7 +40,6 @@ DEFAULT_TOP_N = 44
 uploaded = st.sidebar.file_uploader("Faça upload do arquivo (CSV)", type=["csv"])
 
 # Variáveis que serão definidas conforme o estado do upload
-data_limite = DEFAULT_DATA_LIMITE
 top_n = DEFAULT_TOP_N
 
 # =========================
@@ -58,18 +56,21 @@ if uploaded is not None:
     <a href="#meta-90" target="_self">🧮 Tabelas</a><br>
     """, unsafe_allow_html=True)
 
-    # Data-limite (apenas após upload)
-    data_limite = st.sidebar.date_input(
-        "Data-limite (registros **antes** desta data precisam fazer o EPS)",
-        value=DEFAULT_DATA_LIMITE,
+    # 👇 Data exibida (somente UI). Não será usada para cálculo.
+    data_limite_ui = st.sidebar.date_input(
+        "Data-limite exibida (apenas visual)",
+        value=DEFAULT_DATA_LIMITE_UI,
         format="DD/MM/YYYY"
     )
 
-    # Top N prefixos no gráfico de barras (apenas após upload)
     top_n = st.sidebar.number_input(
         "Qtde. de Prefixos no gráfico", min_value=1, max_value=200,
         value=DEFAULT_TOP_N, step=1
     )
+else:
+    # Antes do upload, mantenha defaults
+    data_limite_ui = DEFAULT_DATA_LIMITE_UI
+    top_n = DEFAULT_TOP_N
 
 # =========================
 # Funções utilitárias
@@ -98,7 +99,7 @@ def donut_eps_plotly(
         filtro_texto = str(filtro_atual)
 
     fig = go.Figure(data=[go.Pie(
-        labels=["Precisam fazer", f"Vencem até {data_limite.strftime('%d/%m')}"],
+        labels=["Precisam fazer", f"Vencem até {data_limite_ui.strftime('%d/%m')}"],
         values=[porcentagem, 100 - porcentagem],
         hole=0.6,
         sort=False,
@@ -109,7 +110,7 @@ def donut_eps_plotly(
     )])
 
     fig.update_layout(
-        title=f"Percentual de pessoas que precisam fazer o EPS até {data_limite.strftime('%d/%m/%Y')}",
+        title=f"Percentual de pessoas que precisam fazer o EPS até {data_limite_ui.strftime('%d/%m/%Y')}",
         template="plotly_white",
         height=500,
         annotations=[
@@ -269,8 +270,11 @@ if len(dados) == 0:
 
 dados = preparar_df(dados)
 
-# Data-limite efetiva
-limite = pd.Timestamp(datetime.combine(data_limite, datetime.min.time()))
+# Data-limite de cálculo (fixa/oculta)
+data_limite_calc = DEFAULT_DATA_LIMITE_CALC
+
+# Timestamp usado para FILTRAR/CONTAR (cálculo real)
+limite = pd.Timestamp(datetime.combine(data_limite_calc, datetime.min.time()))
 
 # Filtrar "antes"
 dados_antes = dados[dados["Data_Ultimo_Eps"] < limite].copy()
@@ -333,7 +337,7 @@ st.subheader("Visão geral")
 c1, c2, c3 = st.columns(3)
 rotulo = "Todos" if valor_filtro is None else ("(NA)" if valor_filtro == "NA" else str(valor_filtro))
 c1.metric(f"Total de registros – {rotulo}", f"{total:,}".replace(",", "."))
-c2.metric(f"Quantidade de pessoas pendentes {data_limite.strftime('%d/%m')}", f"{qtd_antes:,}".replace(",", "."))
+c2.metric(f"Quantidade de pessoas pendentes {data_limite_ui.strftime('%d/%m')}", f"{qtd_antes:,}".replace(",", "."))
 c3.metric("Percentual pendente", f"{porcentagem:.1f}%")
 
 # ===== Gráfico de Donut =====
