@@ -407,6 +407,7 @@ else:
 
     # ===== Gráfico de Donut =====
     st.markdown('<a name="donut-eps"></a>', unsafe_allow_html=True)
+    st.divider()
     st.subheader("🍩 Percentual geral")
     fig_donut = donut_eps_plotly(
     porcentagem,
@@ -543,7 +544,7 @@ else:
 
     # ===== Percentual por Prefixo =====
     st.markdown('<a name="percentual-prefixo"></a>', unsafe_allow_html=True)
-    st.divader()
+    st.divider()
     st.subheader("🏷️ Percentual por Prefixo")
 
     if "Prefixo" not in dados.columns:
