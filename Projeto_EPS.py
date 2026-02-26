@@ -101,12 +101,13 @@ if uploaded is None:
 #drop_first_line = st.sidebar.checkbox("Remover o cabeçalho extra (apenas se necessário)", value=False)
 st.sidebar.markdown("## 📌 Seções do Dashboard")
 st.sidebar.markdown("""
-📊 Visão Geral  
-🍩 Donut EPS  
-🏷️ Percentual por Prefixo  
-🧮 Meta de 90%  
-⬇️ Consultas e Downloads  
-""")
+<a href="#visao-geral" target="_self">📊 Visão Geral</a><br>
+<a href="#donut-eps" target="_self">🍩 Donut EPS</a><br>
+<a href="#consulta-uor" target="_self">🔎 Consulta por UOR</a><br>
+<a href="#percentual-prefixo" target="_self">🏷️ Percentual por Prefixo</a><br>
+<a href="#meta-90" target="_self">🧮 Meta de 90%</a><br>
+<a href="#downloads" target="_self">⬇️ Downloads</a>
+""", unsafe_allow_html=True)
 # Data-limite (default: 30/06/2025)
 data_limite = st.sidebar.date_input(
     "Data-limite (registros **antes** desta data precisam fazer o EPS)",
@@ -396,6 +397,7 @@ else:
         porcentagem, total, qtd_antes = calcular_porcentagem_eps(dados, dados_antes, prefixo_escolhido=valor_filtro)
 
     # --- KPIs ---
+    st.markdown('<a name="visao-geral"></a>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     rotulo = "Todos" if valor_filtro is None else ("(NA)" if valor_filtro == "NA" else str(valor_filtro))
     c1.metric(f"Total de registros – {rotulo}", f"{total:,}".replace(",", "."))
@@ -403,6 +405,7 @@ else:
     c3.metric("Percentual pendente", f"{porcentagem:.1f}%")
 
     # ===== Gráfico de Donut =====
+    st.markdown('<a name="donut-eps"></a>', unsafe_allow_html=True)
     st.subheader("🍩 Percentual geral")
     fig_donut = donut_eps_plotly(
     porcentagem,
@@ -419,6 +422,7 @@ else:
     )
 
     st.divider()
+    st.markdown('<a name="consulta-uor"></a>', unsafe_allow_html=True)
     st.subheader("🔎 Consultar pendências por UOR (Prefixo 8553)")
 
     # Helpers de sanitização para Excel
@@ -493,6 +497,7 @@ else:
             st.error(f"Erro ao gerar Excel da UOR: {e}")
 
     st.divider()
+    st.markdown('<a name="downloads"></a>', unsafe_allow_html=True)
     st.subheader("⬇️ Baixar dados das pendências")
 
     col1, col2 = st.columns(2)
@@ -536,6 +541,7 @@ else:
             st.error(f"Erro ao gerar Excel único: {e}")
 
     # ===== Percentual por Prefixo =====
+    st.markdown('<a name="percentual-prefixo"></a>', unsafe_allow_html=True)
     st.subheader("🏷️ Percentual por Prefixo")
 
     if "Prefixo" not in dados.columns:
@@ -568,6 +574,7 @@ else:
     with st.expander("📋 Tabela: Percentual pendente por Prefixo"):
         st.dataframe(porc_por_prefixo.round(2).rename("Porcentagem (%)"), use_container_width=True)
 
+    st.markdown('<a name="meta-90"></a>', unsafe_allow_html=True)
     with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
         col_a, col_b = st.columns(2)
         col_a.write("**Totais por Prefixo**")
