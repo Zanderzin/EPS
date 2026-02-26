@@ -59,7 +59,7 @@ if uploaded is not None:
     # 👇 Data exibida (somente UI). Não será usada para cálculo.
     
     data_limite_ui = st.sidebar.date_input(
-            "Data-limite exibida (apenas visual)",
+            "Data-limite estipulada",
             value=DEFAULT_DATA_LIMITE_UI,
             format="DD/MM/YYYY"
             # disabled=False  # deixe habilitado para o usuário poder mudar
