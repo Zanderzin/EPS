@@ -629,7 +629,7 @@ else:
             df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
 
         if metodo == "Arredondado":
-            faltam_col = "Faltam para 90% (ceil)"
+            faltam_col = "Faltam para 90%"
             meta_col = "Meta_90%_Qtd"
         else:
             faltam_col = "Faltam para 90% (compensado)"
