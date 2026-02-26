@@ -30,8 +30,8 @@ a[href*="github.com"] {display: none !important;}
 st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 
 # Defaults (UI x Cálculo)
+# Defaults (UI x Cálculo base)
 DEFAULT_DATA_LIMITE_UI = date(2026, 6, 30)     # o que APARECE para o usuário
-DEFAULT_DATA_LIMITE_CALC = date(2025, 6, 30)   # o que é usado nos CÁLCULOS
 DEFAULT_TOP_N = 44
 
 # =========================
@@ -57,10 +57,12 @@ if uploaded is not None:
     """, unsafe_allow_html=True)
 
     # 👇 Data exibida (somente UI). Não será usada para cálculo.
+    
     data_limite_ui = st.sidebar.date_input(
-        "Data-limite exibida (apenas visual)",
-        value=DEFAULT_DATA_LIMITE_UI,
-        format="DD/MM/YYYY"
+            "Data-limite exibida (apenas visual)",
+            value=DEFAULT_DATA_LIMITE_UI,
+            format="DD/MM/YYYY"
+            # disabled=False  # deixe habilitado para o usuário poder mudar
     )
 
     top_n = st.sidebar.number_input(
@@ -86,6 +88,22 @@ def carregar_dados(file_like, encoding="utf-8", sep=","):
 def preparar_df(df: pd.DataFrame):
     df["Data_Ultimo_Eps"] = pd.to_datetime(df["Data_Ultimo_Eps"], dayfirst=True, errors="coerce")
     return df
+
+def mapear_para_2025(d_ui: date) -> date:
+    """
+    Recebe a data exibida (UI), normalmente em 2026,
+    e retorna a MESMA data em 2025 (mesmo dia e mês).
+    Se a data for 29/02, ajusta para 28/02/2025 (já que 2025 não é bissexto).
+    """
+    try:
+        return date(2025, d_ui.month, d_ui.day)
+    except ValueError:
+        # Caso típico: 29/02 -> 28/02
+        if d_ui.month == 2 and d_ui.day == 29:
+            return date(2025, 2, 28)
+        # Se quiser outra política (ex.: 01/03), troque a linha acima por:
+        # return date(2025, 3, 1)
+        raise
 
 def donut_eps_plotly(
     porcentagem, 
@@ -270,13 +288,13 @@ if len(dados) == 0:
 
 dados = preparar_df(dados)
 
-# Data-limite de cálculo (fixa/oculta)
-data_limite_calc = DEFAULT_DATA_LIMITE_CALC
+# Data-limite de cálculo = MESMO dia/mês da UI, porém em 2025
+data_limite_calc = mapear_para_2025(data_limite_ui)
 
 # Timestamp usado para FILTRAR/CONTAR (cálculo real)
 limite = pd.Timestamp(datetime.combine(data_limite_calc, datetime.min.time()))
 
-# Filtrar "antes"
+# Filtrar "antes" (usa 2025!)
 dados_antes = dados[dados["Data_Ultimo_Eps"] < limite].copy()
 
 # Métricas gerais
