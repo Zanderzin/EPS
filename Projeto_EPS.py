@@ -109,6 +109,43 @@ if uploaded is None:
     - Um **gráfico de barras** com o percentual pendente por **Prefixo**.
     """)
 
+with st.expander("🗂️ O que você encontra neste dashboard"):
+    st.markdown("""
+**📊 Visão Geral**
+- Total de registros
+- Quantidade de pendentes
+- Percentual geral
+
+**🍩 Donut EPS**
+- Distribuição geral por data-limite
+
+**🏷️ Percentual por Prefixo**
+- Ranking visual de pendências
+
+**🧮 Meta de 90%**
+- Cálculo por Prefixo
+- Métodos: Arredondado e Compensado
+- Validação da meta global
+
+**⬇️ Consultas e Downloads**
+- Pendências por UOR
+- Excel por Prefixo
+- Excel consolidado
+""")
+
+# =========================
+# Índice de Navegação
+# =========================
+st.sidebar.markdown("## 📌 Índice")
+
+st.sidebar.markdown("""
+- [📊 Visão Geral](#visao-geral)
+- [🍩 Donut EPS](#donut-eps)
+- [🏷️ Percentual por Prefixo](#percentual-prefixo)
+- [🧮 Meta de 90%](#meta-90)
+- [⬇️ Consultas e Downloads](#downloads)
+""", unsafe_allow_html=True)
+
 # Opções de leitura
 #drop_first_line = st.sidebar.checkbox("Remover o cabeçalho extra (apenas se necessário)", value=False)
 
@@ -123,9 +160,9 @@ data_limite = st.sidebar.date_input(
 top_n = st.sidebar.number_input("Qtde. de Prefixos no gráfico", min_value=1, max_value=200, value=44, step=1)
 
 # Cores do donut: primeira fatia = "precisam", segunda = "não precisam"
-st.sidebar.subheader("🎨 Cores do gráfico de donut")
-cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
-cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
+# st.sidebar.subheader("🎨 Cores do gráfico de donut")
+# cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
+# cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
 
 # =========================
 # Funções utilitárias
@@ -331,8 +368,8 @@ else:
 
 
     # Pré-visualização
-    with st.expander("🔎 Pré-visualização dos dados (primeiras linhas)"):
-        st.dataframe(dados.head(20), use_container_width=True)
+    # with st.expander("🔎 Pré-visualização dos dados (primeiras linhas)"):
+    #     st.dataframe(dados.head(20), use_container_width=True)
 
     if len(dados) == 0:
         st.error("O DataFrame está vazio após o carregamento/limpeza.")
@@ -400,6 +437,7 @@ else:
     else:
         porcentagem, total, qtd_antes = calcular_porcentagem_eps(dados, dados_antes, prefixo_escolhido=valor_filtro)
 
+    st.markdown('<div id="visao-geral"></div>', unsafe_allow_html=True)
     # --- KPIs ---
     c1, c2, c3 = st.columns(3)
     rotulo = "Todos" if valor_filtro is None else ("(NA)" if valor_filtro == "NA" else str(valor_filtro))
@@ -408,12 +446,13 @@ else:
     c3.metric("Percentual pendente", f"{porcentagem:.1f}%")
 
     # ===== Gráfico de Donut =====
+    st.markdown('<div id="donut-eps"></div>', unsafe_allow_html=True)
     st.subheader("🍩 Percentual geral")
     fig_donut = donut_eps_plotly(
     porcentagem,
     filtro_atual=prefixo_escolhido,   # 👈 agora mostra o filtro selecionado
-    cor_precisam=cor_precisam,
-    cor_nao_precisam=cor_nao_precisam)
+    cor_precisam="#e72914",
+    cor_nao_precisam="#0fe267")
     st.plotly_chart(
         fig_donut,
         use_container_width=True,
@@ -424,6 +463,7 @@ else:
     )
 
     st.divider()
+    st.markdown('<div id="downloads"></div>', unsafe_allow_html=True)
     st.subheader("🔎 Consultar pendências por UOR (Prefixo 8553)")
 
     # Helpers de sanitização para Excel
@@ -541,6 +581,7 @@ else:
             st.error(f"Erro ao gerar Excel único: {e}")
 
     # ===== Percentual por Prefixo =====
+    st.markdown('<div id="percentual-prefixo"></div>', unsafe_allow_html=True)
     st.subheader("🏷️ Percentual por Prefixo")
 
     if "Prefixo" not in dados.columns:
@@ -573,8 +614,9 @@ else:
     with st.expander("📋 Tabela: Percentual pendente por Prefixo"):
         st.dataframe(porc_por_prefixo.round(2).rename("Porcentagem (%)"), use_container_width=True)
 
+    st.markdown('<div id="meta-90"></div>', unsafe_allow_html=True)
     with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
-        col_a, col_b, col_c, col_d = st.columns(4)
+        col_a, col_b = st.columns(2)
         col_a.write("**Totais por Prefixo**")
         col_a.dataframe(totais.rename("Total"), use_container_width=True)
         col_b.write("**Pendentes por Prefixo**")
@@ -593,8 +635,8 @@ else:
 
         # --- Método de cálculo ---
         metodo = st.radio(
-            "Como calcular a coluna **Faltam para 90%**?",
-            ["Sempre para cima (ceil)", "Compensado (maior resto)"],
+            "Escolha o método para calcular a coluna",
+            ["Arredondado", "Compensado (maior resto)"],
             horizontal=True
         )
 
@@ -604,9 +646,9 @@ else:
         # Base "faltam" por ceil (sempre não-negativo)
         dfm["Faltam_Ceil"] = (dfm["Meta_90%_Qtd"] - dfm["Pendentes"]).clip(lower=0).astype(int)
 
-        if metodo == "Sempre para cima (ceil)":
+        if metodo == "Arredondado":
             df_out = dfm[["Total", "Pendentes", "%Pendentes", "Meta_90%_Qtd", "Faltam_Ceil"]].rename(
-                columns={"Faltam_Ceil": "Faltam para 90% (ceil)"}
+                columns={"Faltam_Ceil": "Faltam para 90%"}
             )
         else:
             # --- Compensado (método do maior resto / Hamilton) ---
@@ -640,9 +682,7 @@ else:
             df_out["Meta_90%_Qtd (compensado)"] = (df_out["Pendentes"] + faltam_comp).astype(int)
             df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
 
-        st.markdown("## 🧪 Validação do cálculo (soma geral)")
-
-        if metodo == "Sempre para cima (ceil)":
+        if metodo == "Arredondado":
             faltam_col = "Faltam para 90% (ceil)"
             meta_col = "Meta_90%_Qtd"
         else:
@@ -665,13 +705,10 @@ else:
             use_container_width=True
         )
 
-        col_c.metric("Pendentes após ajuste", f"{pendentes_finais:,}")
-        col_d.metric("% final de pendentes", f"{pct_final:.2f}%")
-
         # Pequena legenda para explicar os métodos
         with st.expander("ℹ️ Entenda os métodos"):
             st.markdown(
-                "- **Sempre para cima (ceil):** calcula `ceil(90%×Total) − Pendentes` por Prefixo (mínimo 0).\n"
+                "- **Arredondado:** calcula `ceil(90%×Total) − Pendentes` por Prefixo (mínimo 0).\n"
                 "- **Compensado (maior resto):** soma os ideais por Prefixo, usa a parte inteira e distribui os `+1` pelos **maiores restos**, "
                 "reduzindo distorções em Prefixos muito pequenos."
             )
