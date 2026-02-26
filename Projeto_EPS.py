@@ -99,7 +99,14 @@ if uploaded is None:
 
 # Opções de leitura
 #drop_first_line = st.sidebar.checkbox("Remover o cabeçalho extra (apenas se necessário)", value=False)
-
+st.sidebar.markdown("## 📌 Seções do Dashboard")
+st.sidebar.markdown("""
+📊 Visão Geral  
+🍩 Donut EPS  
+🏷️ Percentual por Prefixo  
+🧮 Meta de 90%  
+⬇️ Consultas e Downloads  
+""")
 # Data-limite (default: 30/06/2025)
 data_limite = st.sidebar.date_input(
     "Data-limite (registros **antes** desta data precisam fazer o EPS)",
