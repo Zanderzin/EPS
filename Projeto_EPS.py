@@ -9,59 +9,59 @@ from datetime import datetime, date
 # =========================
 # Configuração da página
 # =========================
-# def gatekeeper_password():
-#     """
-#     Porta de entrada por senha única:
-#     - Se já autenticado, libera o app.
-#     - Se não, mostra um formulário de senha com mensagens amigáveis.
-#     - Sempre interrompe a execução (st.stop) enquanto não autenticado.
-#     """
-#     # Já autenticado nesta sessão?
-#     if st.session_state.get("auth_ok", False):
-#         return
+def gatekeeper_password():
+    """
+    Porta de entrada por senha única:
+    - Se já autenticado, libera o app.
+    - Se não, mostra um formulário de senha com mensagens amigáveis.
+    - Sempre interrompe a execução (st.stop) enquanto não autenticado.
+    """
+    # Já autenticado nesta sessão?
+    if st.session_state.get("auth_ok", False):
+        return
 
-#     # Verifica se a senha foi configurada em st.secrets
-#     senha_configurada = st.secrets.get("PASSWORD", None)
-#     if not senha_configurada:
-#         st.title("🔒 Acesso restrito")
-#         st.error(
-#             "Configuração ausente: a senha do app não foi definida.\n\n"
-#             "Peça ao responsável pelo deploy para configurar **`PASSWORD`** em *Settings → Secrets*."
-#         )
-#         st.stop()
+    # Verifica se a senha foi configurada em st.secrets
+    senha_configurada = st.secrets.get("PASSWORD", None)
+    if not senha_configurada:
+        st.title("🔒 Acesso restrito")
+        st.error(
+            "Configuração ausente: a senha do app não foi definida.\n\n"
+            "Peça ao responsável pelo deploy para configurar **`PASSWORD`** em *Settings → Secrets*."
+        )
+        st.stop()
 
-#     # Controle simples de tentativas (opcional)
-#     if "login_tries" not in st.session_state:
-#         st.session_state.login_tries = 0
+    # Controle simples de tentativas (opcional)
+    if "login_tries" not in st.session_state:
+        st.session_state.login_tries = 0
 
-#     st.title("🔒 Acesso restrito")
+    st.title("🔒 Acesso restrito")
 
-#     with st.form("form_login", clear_on_submit=False):
-#         pwd = st.text_input("Informe a senha", type="password", help="Acesso permitido apenas a usuários autorizados.")
-#         entrar = st.form_submit_button("Entrar")
+    with st.form("form_login", clear_on_submit=False):
+        pwd = st.text_input("Informe a senha", type="password", help="Acesso permitido apenas a usuários autorizados.")
+        entrar = st.form_submit_button("Entrar")
 
-#     if entrar:
-#         if not pwd:
-#             st.warning("Digite a senha para continuar.")
-#         elif pwd == senha_configurada:
-#             st.session_state["auth_ok"] = True
-#             st.session_state.login_tries = 0
-#             st.success("Acesso liberado! Carregando o dashboard…")
-#             st.rerun()
-#         else:
-#             st.session_state.login_tries += 1
-#             # Mensagens amigáveis sem código/trace
-#             if st.session_state.login_tries == 1:
-#                 st.error("Senha incorreta. Tente novamente.")
-#             elif st.session_state.login_tries < 5:
-#                 st.error(f"Senha incorreta. Tentativas: {st.session_state.login_tries}/5.")
-#                 st.caption("Dica: verifique maiúsculas/minúsculas ou copie/cole a senha com cuidado.")
-#             else:
-#                 st.error("Muitas tentativas falhas. Aguarde um momento e tente novamente.")
-#                 st.caption("Se o problema persistir, contate o responsável pelo dashboard.")
+    if entrar:
+        if not pwd:
+            st.warning("Digite a senha para continuar.")
+        elif pwd == senha_configurada:
+            st.session_state["auth_ok"] = True
+            st.session_state.login_tries = 0
+            st.success("Acesso liberado! Carregando o dashboard…")
+            st.rerun()
+        else:
+            st.session_state.login_tries += 1
+            # Mensagens amigáveis sem código/trace
+            if st.session_state.login_tries == 1:
+                st.error("Senha incorreta. Tente novamente.")
+            elif st.session_state.login_tries < 5:
+                st.error(f"Senha incorreta. Tentativas: {st.session_state.login_tries}/5.")
+                st.caption("Dica: verifique maiúsculas/minúsculas ou copie/cole a senha com cuidado.")
+            else:
+                st.error("Muitas tentativas falhas. Aguarde um momento e tente novamente.")
+                st.caption("Se o problema persistir, contate o responsável pelo dashboard.")
 
-#     # Enquanto não autenticado, interrompe o app aqui
-#     st.stop()
+    # Enquanto não autenticado, interrompe o app aqui
+    st.stop()
 
 st.set_page_config(
     page_title="Dashboard EPS - Prefixos",
@@ -94,7 +94,7 @@ a[href*="github.com"] {display: none !important;}
 """
 st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 
-# gatekeeper_password()  # <- chama antes do restante do app
+gatekeeper_password()  # <- chama antes do restante do app
 
 # -- Upload (apenas CSV) --
 uploaded = st.sidebar.file_uploader("Faça upload do arquivo (CSV)", type=["csv"])
@@ -580,7 +580,6 @@ else:
         col_b.write("**Pendentes por Prefixo**")
         col_b.dataframe(antes.rename("Pendentes"), use_container_width=True)
 
-
         st.markdown("### 📌 Meta: **90% pendentes** por Prefixo")
         meta_pct = 0.90
 
@@ -639,22 +638,6 @@ else:
             df_out = dfm[["Total", "Pendentes", "%Pendentes"]].copy()
             df_out["Meta_90%_Qtd (compensado)"] = (df_out["Pendentes"] + faltam_comp).astype(int)
             df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
-
-        st.markdown("## 🧪 Validação do cálculo (soma geral)")
-
-        if metodo == "Sempre para cima (ceil)":
-            faltam_col = "Faltam para 90% (ceil)"
-            meta_col = "Meta_90%_Qtd"
-        else:
-            faltam_col = "Faltam para 90% (compensado)"
-            meta_col = "Meta_90%_Qtd (compensado)"
-
-        total_geral = df_out["Total"].sum()
-        pendentes_atuais = df_out["Pendentes"].sum()
-        faltam_total = df_out[faltam_col].sum()
-
-        pendentes_finais = pendentes_atuais + faltam_total
-        pct_final = pendentes_finais / total_geral * 100 if total_geral > 0 else 0
 
         # Formatação e exibição
         formatadores = {
