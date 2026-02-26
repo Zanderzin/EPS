@@ -104,7 +104,7 @@ st.sidebar.markdown("""
 <a href="#visao-geral" target="_self">📊 Visão Geral</a><br>
 <a href="#donut-eps" target="_self">🍩 Donut EPS</a><br>
 <a href="#consulta-uor" target="_self">🔎 Consulta por UOR</a><br>
-<a href="#downloads" target="_self">⬇️ Downloads</a>
+<a href="#downloads" target="_self">⬇️ Downloads</a><br>
 <a href="#percentual-prefixo" target="_self">🏷️ Percentual por Prefixo</a><br>
 <a href="#meta-90" target="_self">🧮 Meta de 90%</a><br>
 """, unsafe_allow_html=True)
