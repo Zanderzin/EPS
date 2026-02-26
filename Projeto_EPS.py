@@ -398,6 +398,7 @@ else:
 
     # --- KPIs ---
     st.markdown('<a name="visao-geral"></a>', unsafe_allow_html=True)
+    st.divider()
     c1, c2, c3 = st.columns(3)
     rotulo = "Todos" if valor_filtro is None else ("(NA)" if valor_filtro == "NA" else str(valor_filtro))
     c1.metric(f"Total de registros – {rotulo}", f"{total:,}".replace(",", "."))
@@ -421,8 +422,8 @@ else:
         }
     )
 
-    st.divider()
     st.markdown('<a name="consulta-uor"></a>', unsafe_allow_html=True)
+    st.divider()
     st.subheader("🔎 Consultar pendências por UOR (Prefixo 8553)")
 
     # Helpers de sanitização para Excel
@@ -496,8 +497,8 @@ else:
         except Exception as e:
             st.error(f"Erro ao gerar Excel da UOR: {e}")
 
-    st.divider()
     st.markdown('<a name="downloads"></a>', unsafe_allow_html=True)
+    st.divider()
     st.subheader("⬇️ Baixar dados das pendências")
 
     col1, col2 = st.columns(2)
@@ -542,6 +543,7 @@ else:
 
     # ===== Percentual por Prefixo =====
     st.markdown('<a name="percentual-prefixo"></a>', unsafe_allow_html=True)
+    st.divader()
     st.subheader("🏷️ Percentual por Prefixo")
 
     if "Prefixo" not in dados.columns:
