@@ -72,23 +72,12 @@ st.set_page_config(
 # Oculta menu, footer, barra superior do Streamlit Cloud e qualquer badge/link do GitHub
 HIDE_DECORATIONS = """
 <style>
-/* Esconde menu hamburger e cabeçalho */
 #MainMenu {visibility: hidden;}
-header {visibility: hidden;}
-
-/* Esconde rodapé padrão ("Made with Streamlit") */
 footer {visibility: hidden;}
-
-/* Esconde a toolbar do Streamlit Cloud (deploy/editar) */
 div[data-testid="stToolbar"] {visibility: hidden; height: 0;}
-
-/* Esconde o “badge”/ícone de deploy/versão/botões no canto */
 div[data-testid="stStatusWidget"] {display: none;}
 div[data-testid="stDecoration"] {display: none;}
-/* Alguns temas usam essa classe para o badge de visualização */
 .viewerBadge_link__qRh6M {display: none !important;}
-
-/* Cuidado: regra genérica para links do GitHub no app (se houver) */
 a[href*="github.com"] {display: none !important;}
 </style>
 """
@@ -399,7 +388,6 @@ else:
     else:
         porcentagem, total, qtd_antes = calcular_porcentagem_eps(dados, dados_antes, prefixo_escolhido=valor_filtro)
 
-    st.markdown('<div id="visao-geral"></div>', unsafe_allow_html=True)
     # --- KPIs ---
     c1, c2, c3 = st.columns(3)
     rotulo = "Todos" if valor_filtro is None else ("(NA)" if valor_filtro == "NA" else str(valor_filtro))
@@ -408,7 +396,6 @@ else:
     c3.metric("Percentual pendente", f"{porcentagem:.1f}%")
 
     # ===== Gráfico de Donut =====
-    st.markdown('<div id="donut-eps"></div>', unsafe_allow_html=True)
     st.subheader("🍩 Percentual geral")
     fig_donut = donut_eps_plotly(
     porcentagem,
@@ -425,7 +412,6 @@ else:
     )
 
     st.divider()
-    st.markdown('<div id="downloads"></div>', unsafe_allow_html=True)
     st.subheader("🔎 Consultar pendências por UOR (Prefixo 8553)")
 
     # Helpers de sanitização para Excel
@@ -543,7 +529,6 @@ else:
             st.error(f"Erro ao gerar Excel único: {e}")
 
     # ===== Percentual por Prefixo =====
-    st.markdown('<div id="percentual-prefixo"></div>', unsafe_allow_html=True)
     st.subheader("🏷️ Percentual por Prefixo")
 
     if "Prefixo" not in dados.columns:
@@ -576,7 +561,6 @@ else:
     with st.expander("📋 Tabela: Percentual pendente por Prefixo"):
         st.dataframe(porc_por_prefixo.round(2).rename("Porcentagem (%)"), use_container_width=True)
 
-    st.markdown('<div id="meta-90"></div>', unsafe_allow_html=True)
     with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
         col_a, col_b = st.columns(2)
         col_a.write("**Totais por Prefixo**")
@@ -678,15 +662,14 @@ else:
     # =========================
     # Índice de Navegação
     # =========================
-    st.sidebar.markdown("## 📌 Índice")
-
+    st.sidebar.markdown("## 📌 Seções do Dashboard")
     st.sidebar.markdown("""
-    - [📊 Visão Geral](#visao-geral)
-    - [🍩 Donut EPS](#donut-eps)
-    - [🏷️ Percentual por Prefixo](#percentual-prefixo)
-    - [🧮 Meta de 90%](#meta-90)
-    - [⬇️ Consultas e Downloads](#downloads)
-    """, unsafe_allow_html=True)        
+    📊 Visão Geral  
+    🍩 Donut EPS  
+    🏷️ Percentual por Prefixo  
+    🧮 Meta de 90%  
+    ⬇️ Consultas e Downloads  
+    """)       
     st.info("""
 **Observações**
 - Entrada **somente CSV**.
