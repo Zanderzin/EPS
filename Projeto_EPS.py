@@ -329,18 +329,6 @@ else:
         st.error(f"Erro ao carregar o CSV: {e}")
         st.stop()
 
-    # =========================
-    # Índice de Navegação
-    # =========================
-    st.sidebar.markdown("## 📌 Índice")
-
-    st.sidebar.markdown("""
-    - [📊 Visão Geral](#visao-geral)
-    - [🍩 Donut EPS](#donut-eps)
-    - [🏷️ Percentual por Prefixo](#percentual-prefixo)
-    - [🧮 Meta de 90%](#meta-90)
-    - [⬇️ Consultas e Downloads](#downloads)
-    """, unsafe_allow_html=True)
     # Pré-visualização
     # with st.expander("🔎 Pré-visualização dos dados (primeiras linhas)"):
     #     st.dataframe(dados.head(20), use_container_width=True)
@@ -686,6 +674,19 @@ else:
                 "- **Compensado (maior resto):** soma os ideais por Prefixo, usa a parte inteira e distribui os `+1` pelos **maiores restos**, "
                 "reduzindo distorções em Prefixos muito pequenos."
             )
+
+    # =========================
+    # Índice de Navegação
+    # =========================
+    st.sidebar.markdown("## 📌 Índice")
+
+    st.sidebar.markdown("""
+    - [📊 Visão Geral](#visao-geral)
+    - [🍩 Donut EPS](#donut-eps)
+    - [🏷️ Percentual por Prefixo](#percentual-prefixo)
+    - [🧮 Meta de 90%](#meta-90)
+    - [⬇️ Consultas e Downloads](#downloads)
+    """, unsafe_allow_html=True)        
     st.info("""
 **Observações**
 - Entrada **somente CSV**.
