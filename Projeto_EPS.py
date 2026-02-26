@@ -70,29 +70,29 @@ st.set_page_config(
 )
 
 # Oculta menu, footer, barra superior do Streamlit Cloud e qualquer badge/link do GitHub
-HIDE_DECORATIONS = """
-<style>
-/* Esconde menu hamburger e cabeçalho */
-#MainMenu {visibility: hidden;}
-header {visibility: hidden;}
+# HIDE_DECORATIONS = """
+# <style>
+# /* Esconde menu hamburger e cabeçalho */
+# #MainMenu {visibility: hidden;}
+# header {visibility: hidden;}
 
-/* Esconde rodapé padrão ("Made with Streamlit") */
-footer {visibility: hidden;}
+# /* Esconde rodapé padrão ("Made with Streamlit") */
+# footer {visibility: hidden;}
 
-/* Esconde a toolbar do Streamlit Cloud (deploy/editar) */
-div[data-testid="stToolbar"] {visibility: hidden; height: 0;}
+# /* Esconde a toolbar do Streamlit Cloud (deploy/editar) */
+# div[data-testid="stToolbar"] {visibility: hidden; height: 0;}
 
-/* Esconde o “badge”/ícone de deploy/versão/botões no canto */
-div[data-testid="stStatusWidget"] {display: none;}
-div[data-testid="stDecoration"] {display: none;}
-/* Alguns temas usam essa classe para o badge de visualização */
-.viewerBadge_link__qRh6M {display: none !important;}
+# /* Esconde o “badge”/ícone de deploy/versão/botões no canto */
+# div[data-testid="stStatusWidget"] {display: none;}
+# div[data-testid="stDecoration"] {display: none;}
+# /* Alguns temas usam essa classe para o badge de visualização */
+# .viewerBadge_link__qRh6M {display: none !important;}
 
-/* Cuidado: regra genérica para links do GitHub no app (se houver) */
-a[href*="github.com"] {display: none !important;}
-</style>
-"""
-st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
+# /* Cuidado: regra genérica para links do GitHub no app (se houver) */
+# a[href*="github.com"] {display: none !important;}
+# </style>
+# """
+# st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 
 # gatekeeper_password()  # <- chama antes do restante do app
 
