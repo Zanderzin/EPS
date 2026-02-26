@@ -9,59 +9,59 @@ from datetime import datetime, date
 # =========================
 # Configuração da página
 # =========================
-def gatekeeper_password():
-    """
-    Porta de entrada por senha única:
-    - Se já autenticado, libera o app.
-    - Se não, mostra um formulário de senha com mensagens amigáveis.
-    - Sempre interrompe a execução (st.stop) enquanto não autenticado.
-    """
-    # Já autenticado nesta sessão?
-    if st.session_state.get("auth_ok", False):
-        return
+# def gatekeeper_password():
+#     """
+#     Porta de entrada por senha única:
+#     - Se já autenticado, libera o app.
+#     - Se não, mostra um formulário de senha com mensagens amigáveis.
+#     - Sempre interrompe a execução (st.stop) enquanto não autenticado.
+#     """
+#     # Já autenticado nesta sessão?
+#     if st.session_state.get("auth_ok", False):
+#         return
 
-    # Verifica se a senha foi configurada em st.secrets
-    senha_configurada = st.secrets.get("PASSWORD", None)
-    if not senha_configurada:
-        st.title("🔒 Acesso restrito")
-        st.error(
-            "Configuração ausente: a senha do app não foi definida.\n\n"
-            "Peça ao responsável pelo deploy para configurar **`PASSWORD`** em *Settings → Secrets*."
-        )
-        st.stop()
+#     # Verifica se a senha foi configurada em st.secrets
+#     senha_configurada = st.secrets.get("PASSWORD", None)
+#     if not senha_configurada:
+#         st.title("🔒 Acesso restrito")
+#         st.error(
+#             "Configuração ausente: a senha do app não foi definida.\n\n"
+#             "Peça ao responsável pelo deploy para configurar **`PASSWORD`** em *Settings → Secrets*."
+#         )
+#         st.stop()
 
-    # Controle simples de tentativas (opcional)
-    if "login_tries" not in st.session_state:
-        st.session_state.login_tries = 0
+#     # Controle simples de tentativas (opcional)
+#     if "login_tries" not in st.session_state:
+#         st.session_state.login_tries = 0
 
-    st.title("🔒 Acesso restrito")
+#     st.title("🔒 Acesso restrito")
 
-    with st.form("form_login", clear_on_submit=False):
-        pwd = st.text_input("Informe a senha", type="password", help="Acesso permitido apenas a usuários autorizados.")
-        entrar = st.form_submit_button("Entrar")
+#     with st.form("form_login", clear_on_submit=False):
+#         pwd = st.text_input("Informe a senha", type="password", help="Acesso permitido apenas a usuários autorizados.")
+#         entrar = st.form_submit_button("Entrar")
 
-    if entrar:
-        if not pwd:
-            st.warning("Digite a senha para continuar.")
-        elif pwd == senha_configurada:
-            st.session_state["auth_ok"] = True
-            st.session_state.login_tries = 0
-            st.success("Acesso liberado! Carregando o dashboard…")
-            st.rerun()
-        else:
-            st.session_state.login_tries += 1
-            # Mensagens amigáveis sem código/trace
-            if st.session_state.login_tries == 1:
-                st.error("Senha incorreta. Tente novamente.")
-            elif st.session_state.login_tries < 5:
-                st.error(f"Senha incorreta. Tentativas: {st.session_state.login_tries}/5.")
-                st.caption("Dica: verifique maiúsculas/minúsculas ou copie/cole a senha com cuidado.")
-            else:
-                st.error("Muitas tentativas falhas. Aguarde um momento e tente novamente.")
-                st.caption("Se o problema persistir, contate o responsável pelo dashboard.")
+#     if entrar:
+#         if not pwd:
+#             st.warning("Digite a senha para continuar.")
+#         elif pwd == senha_configurada:
+#             st.session_state["auth_ok"] = True
+#             st.session_state.login_tries = 0
+#             st.success("Acesso liberado! Carregando o dashboard…")
+#             st.rerun()
+#         else:
+#             st.session_state.login_tries += 1
+#             # Mensagens amigáveis sem código/trace
+#             if st.session_state.login_tries == 1:
+#                 st.error("Senha incorreta. Tente novamente.")
+#             elif st.session_state.login_tries < 5:
+#                 st.error(f"Senha incorreta. Tentativas: {st.session_state.login_tries}/5.")
+#                 st.caption("Dica: verifique maiúsculas/minúsculas ou copie/cole a senha com cuidado.")
+#             else:
+#                 st.error("Muitas tentativas falhas. Aguarde um momento e tente novamente.")
+#                 st.caption("Se o problema persistir, contate o responsável pelo dashboard.")
 
-    # Enquanto não autenticado, interrompe o app aqui
-    st.stop()
+#     # Enquanto não autenticado, interrompe o app aqui
+#     st.stop()
 
 st.set_page_config(
     page_title="Dashboard EPS - Prefixos",
@@ -72,18 +72,29 @@ st.set_page_config(
 # Oculta menu, footer, barra superior do Streamlit Cloud e qualquer badge/link do GitHub
 HIDE_DECORATIONS = """
 <style>
+/* Esconde menu hamburger e cabeçalho */
 #MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Esconde rodapé padrão ("Made with Streamlit") */
 footer {visibility: hidden;}
+
+/* Esconde a toolbar do Streamlit Cloud (deploy/editar) */
 div[data-testid="stToolbar"] {visibility: hidden; height: 0;}
+
+/* Esconde o “badge”/ícone de deploy/versão/botões no canto */
 div[data-testid="stStatusWidget"] {display: none;}
 div[data-testid="stDecoration"] {display: none;}
+/* Alguns temas usam essa classe para o badge de visualização */
 .viewerBadge_link__qRh6M {display: none !important;}
+
+/* Cuidado: regra genérica para links do GitHub no app (se houver) */
 a[href*="github.com"] {display: none !important;}
 </style>
 """
 st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 
-gatekeeper_password()  # <- chama antes do restante do app
+# gatekeeper_password()  # <- chama antes do restante do app
 
 # -- Upload (apenas CSV) --
 uploaded = st.sidebar.file_uploader("Faça upload do arquivo (CSV)", type=["csv"])
@@ -111,20 +122,10 @@ data_limite = st.sidebar.date_input(
 # Top N prefixos no gráfico de barras
 top_n = st.sidebar.number_input("Qtde. de Prefixos no gráfico", min_value=1, max_value=200, value=44, step=1)
 
-# #Cores do donut: primeira fatia = "precisam", segunda = "não precisam"
-# st.sidebar.subheader("🎨 Cores do gráfico de donut")
-# cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
-# cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("## 📌 Seções do Dashboard")
-st.sidebar.markdown("""
-📊 Visão Geral  
-🍩 Donut EPS  
-🏷️ Percentual por Prefixo  
-🧮 Meta de 90%  
-⬇️ Consultas e Downloads  
-""")
+# Cores do donut: primeira fatia = "precisam", segunda = "não precisam"
+st.sidebar.subheader("🎨 Cores do gráfico de donut")
+cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
+cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
 
 # =========================
 # Funções utilitárias
@@ -328,9 +329,10 @@ else:
         st.error(f"Erro ao carregar o CSV: {e}")
         st.stop()
 
+
     # Pré-visualização
-    # with st.expander("🔎 Pré-visualização dos dados (primeiras linhas)"):
-    #     st.dataframe(dados.head(20), use_container_width=True)
+    with st.expander("🔎 Pré-visualização dos dados (primeiras linhas)"):
+        st.dataframe(dados.head(20), use_container_width=True)
 
     if len(dados) == 0:
         st.error("O DataFrame está vazio após o carregamento/limpeza.")
@@ -410,8 +412,8 @@ else:
     fig_donut = donut_eps_plotly(
     porcentagem,
     filtro_atual=prefixo_escolhido,   # 👈 agora mostra o filtro selecionado
-    cor_precisam="#e72914",
-    cor_nao_precisam="#0fe267")
+    cor_precisam=cor_precisam,
+    cor_nao_precisam=cor_nao_precisam)
     st.plotly_chart(
         fig_donut,
         use_container_width=True,
@@ -591,8 +593,8 @@ else:
 
         # --- Método de cálculo ---
         metodo = st.radio(
-            "Escolha o método para calcular a coluna",
-            ["Arredondado", "Compensado (maior resto)"],
+            "Como calcular a coluna **Faltam para 90%**?",
+            ["Sempre para cima (ceil)", "Compensado (maior resto)"],
             horizontal=True
         )
 
@@ -602,9 +604,9 @@ else:
         # Base "faltam" por ceil (sempre não-negativo)
         dfm["Faltam_Ceil"] = (dfm["Meta_90%_Qtd"] - dfm["Pendentes"]).clip(lower=0).astype(int)
 
-        if metodo == "Arredondado":
+        if metodo == "Sempre para cima (ceil)":
             df_out = dfm[["Total", "Pendentes", "%Pendentes", "Meta_90%_Qtd", "Faltam_Ceil"]].rename(
-                columns={"Faltam_Ceil": "Faltam para 90%"}
+                columns={"Faltam_Ceil": "Faltam para 90% (ceil)"}
             )
         else:
             # --- Compensado (método do maior resto / Hamilton) ---
@@ -638,8 +640,10 @@ else:
             df_out["Meta_90%_Qtd (compensado)"] = (df_out["Pendentes"] + faltam_comp).astype(int)
             df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
 
-        if metodo == "Arredondado":
-            faltam_col = "Faltam para 90%"
+        st.markdown("## 🧪 Validação do cálculo (soma geral)")
+
+        if metodo == "Sempre para cima (ceil)":
+            faltam_col = "Faltam para 90% (ceil)"
             meta_col = "Meta_90%_Qtd"
         else:
             faltam_col = "Faltam para 90% (compensado)"
@@ -664,11 +668,10 @@ else:
         # Pequena legenda para explicar os métodos
         with st.expander("ℹ️ Entenda os métodos"):
             st.markdown(
-                "- **Arredondado:** calcula `ceil(90%×Total) − Pendentes` por Prefixo (mínimo 0).\n"
+                "- **Sempre para cima (ceil):** calcula `ceil(90%×Total) − Pendentes` por Prefixo (mínimo 0).\n"
                 "- **Compensado (maior resto):** soma os ideais por Prefixo, usa a parte inteira e distribui os `+1` pelos **maiores restos**, "
                 "reduzindo distorções em Prefixos muito pequenos."
             )
-
     st.info("""
 **Observações**
 - Entrada **somente CSV**.
