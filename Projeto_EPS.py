@@ -99,30 +99,6 @@ st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 # -- Upload (apenas CSV) --
 uploaded = st.sidebar.file_uploader("Faça upload do arquivo (CSV)", type=["csv"])
 
-with st.expander("🗂️ O que você encontra neste dashboard"):
-    st.markdown("""
-**📊 Visão Geral**
-- Total de registros
-- Quantidade de pendentes
-- Percentual geral
-
-**🍩 Donut EPS**
-- Distribuição geral por data-limite
-
-**🏷️ Percentual por Prefixo**
-- Ranking visual de pendências
-
-**🧮 Meta de 90%**
-- Cálculo por Prefixo
-- Métodos: Arredondado e Compensado
-- Validação da meta global
-
-**⬇️ Consultas e Downloads**
-- Pendências por UOR
-- Excel por Prefixo
-- Excel consolidado
-""")
-
 # -- Cabeçalho e descrição só aparecem antes do upload --
 if uploaded is None:
     st.title("📊 Dashboard EPS - Análise por Data e Prefixo")
@@ -132,30 +108,6 @@ if uploaded is None:
     - Um **gráfico de donut** (vermelho/verde) com o percentual geral;
     - Um **gráfico de barras** com o percentual pendente por **Prefixo**.
     """)
-
-with st.expander("🗂️ O que você encontra neste dashboard"):
-    st.markdown("""
-**📊 Visão Geral**
-- Total de registros
-- Quantidade de pendentes
-- Percentual geral
-
-**🍩 Donut EPS**
-- Distribuição geral por data-limite
-
-**🏷️ Percentual por Prefixo**
-- Ranking visual de pendências
-
-**🧮 Meta de 90%**
-- Cálculo por Prefixo
-- Métodos: Arredondado e Compensado
-- Validação da meta global
-
-**⬇️ Consultas e Downloads**
-- Pendências por UOR
-- Excel por Prefixo
-- Excel consolidado
-""")
 
 # =========================
 # Índice de Navegação
