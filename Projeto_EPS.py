@@ -119,9 +119,9 @@ data_limite = st.sidebar.date_input(
 top_n = st.sidebar.number_input("Qtde. de Prefixos no gráfico", min_value=1, max_value=200, value=44, step=1)
 
 # Cores do donut: primeira fatia = "precisam", segunda = "não precisam"
-st.sidebar.subheader("🎨 Cores do gráfico de donut")
-cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
-cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
+# st.sidebar.subheader("🎨 Cores do gráfico de donut")
+# cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
+# cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
 
 # =========================
 # Funções utilitárias
@@ -327,8 +327,8 @@ else:
 
 
     # Pré-visualização
-    with st.expander("🔎 Pré-visualização dos dados (primeiras linhas)"):
-        st.dataframe(dados.head(20), use_container_width=True)
+    # with st.expander("🔎 Pré-visualização dos dados (primeiras linhas)"):
+    #     st.dataframe(dados.head(20), use_container_width=True)
 
     if len(dados) == 0:
         st.error("O DataFrame está vazio após o carregamento/limpeza.")
@@ -410,8 +410,8 @@ else:
     fig_donut = donut_eps_plotly(
     porcentagem,
     filtro_atual=prefixo_escolhido,   # 👈 agora mostra o filtro selecionado
-    cor_precisam=cor_precisam,
-    cor_nao_precisam=cor_nao_precisam)
+    cor_precisam="#e72914",
+    cor_nao_precisam="#0fe267")
     st.plotly_chart(
         fig_donut,
         use_container_width=True,
@@ -596,7 +596,7 @@ else:
         # --- Método de cálculo ---
         metodo = st.radio(
             "Como calcular a coluna **Faltam para 90%**?",
-            ["Sempre para cima (ceil)", "Compensado (maior resto)"],
+            ["Arredondado", "Compensado (maior resto)"],
             horizontal=True
         )
 
@@ -606,7 +606,7 @@ else:
         # Base "faltam" por ceil (sempre não-negativo)
         dfm["Faltam_Ceil"] = (dfm["Meta_90%_Qtd"] - dfm["Pendentes"]).clip(lower=0).astype(int)
 
-        if metodo == "Sempre para cima (ceil)":
+        if metodo == "Arredondado":
             df_out = dfm[["Total", "Pendentes", "%Pendentes", "Meta_90%_Qtd", "Faltam_Ceil"]].rename(
                 columns={"Faltam_Ceil": "Faltam para 90% (ceil)"}
             )
@@ -642,9 +642,7 @@ else:
             df_out["Meta_90%_Qtd (compensado)"] = (df_out["Pendentes"] + faltam_comp).astype(int)
             df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
 
-        st.markdown("## 🧪 Validação do cálculo (soma geral)")
-
-        if metodo == "Sempre para cima (ceil)":
+        if metodo == "Arredondado":
             faltam_col = "Faltam para 90% (ceil)"
             meta_col = "Meta_90%_Qtd"
         else:
@@ -670,7 +668,7 @@ else:
         # Pequena legenda para explicar os métodos
         with st.expander("ℹ️ Entenda os métodos"):
             st.markdown(
-                "- **Sempre para cima (ceil):** calcula `ceil(90%×Total) − Pendentes` por Prefixo (mínimo 0).\n"
+                "- **Arredondado:** calcula `ceil(90%×Total) − Pendentes` por Prefixo (mínimo 0).\n"
                 "- **Compensado (maior resto):** soma os ideais por Prefixo, usa a parte inteira e distribui os `+1` pelos **maiores restos**, "
                 "reduzindo distorções em Prefixos muito pequenos."
             )
