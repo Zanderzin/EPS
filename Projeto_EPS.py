@@ -574,11 +574,12 @@ else:
         st.dataframe(porc_por_prefixo.round(2).rename("Porcentagem (%)"), use_container_width=True)
 
     with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
-        col_a, col_b = st.columns(2)
+        col_a, col_b, col_c, col_d = st.columns(4)
         col_a.write("**Totais por Prefixo**")
         col_a.dataframe(totais.rename("Total"), use_container_width=True)
         col_b.write("**Pendentes por Prefixo**")
         col_b.dataframe(antes.rename("Pendentes"), use_container_width=True)
+
 
         st.markdown("### 📌 Meta: **90% pendentes** por Prefixo")
         meta_pct = 0.90
@@ -663,6 +664,9 @@ else:
             df_out.style.format(formatadores),
             use_container_width=True
         )
+
+        col_c.metric("Pendentes após ajuste", f"{pendentes_finais:,}")
+        col_d.metric("% final de pendentes", f"{pct_final:.2f}%")
 
         # Pequena legenda para explicar os métodos
         with st.expander("ℹ️ Entenda os métodos"):
