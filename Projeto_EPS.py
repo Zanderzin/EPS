@@ -111,10 +111,10 @@ data_limite = st.sidebar.date_input(
 # Top N prefixos no gráfico de barras
 top_n = st.sidebar.number_input("Qtde. de Prefixos no gráfico", min_value=1, max_value=200, value=44, step=1)
 
-# Cores do donut: primeira fatia = "precisam", segunda = "não precisam"
-# st.sidebar.subheader("🎨 Cores do gráfico de donut")
-# cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
-# cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
+#Cores do donut: primeira fatia = "precisam", segunda = "não precisam"
+st.sidebar.subheader("🎨 Cores do gráfico de donut")
+cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
+cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 📌 Seções do Dashboard")
