@@ -104,9 +104,9 @@ st.sidebar.markdown("""
 <a href="#visao-geral" target="_self">📊 Visão Geral</a><br>
 <a href="#donut-eps" target="_self">🍩 Donut EPS</a><br>
 <a href="#consulta-uor" target="_self">🔎 Consulta por UOR</a><br>
+<a href="#downloads" target="_self">⬇️ Downloads</a>
 <a href="#percentual-prefixo" target="_self">🏷️ Percentual por Prefixo</a><br>
 <a href="#meta-90" target="_self">🧮 Meta de 90%</a><br>
-<a href="#downloads" target="_self">⬇️ Downloads</a>
 """, unsafe_allow_html=True)
 # Data-limite (default: 30/06/2025)
 data_limite = st.sidebar.date_input(
