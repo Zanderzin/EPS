@@ -116,6 +116,16 @@ top_n = st.sidebar.number_input("Qtde. de Prefixos no gráfico", min_value=1, ma
 # cor_precisam = st.sidebar.color_picker("Cor para **quem precisa**", value="#e72914")   # vermelho
 # cor_nao_precisam = st.sidebar.color_picker("Cor para **quem não precisa**", value="#0fe267")  # verde
 
+st.sidebar.markdown("---")
+st.sidebar.markdown("## 📌 Seções do Dashboard")
+st.sidebar.markdown("""
+📊 Visão Geral  
+🍩 Donut EPS  
+🏷️ Percentual por Prefixo  
+🧮 Meta de 90%  
+⬇️ Consultas e Downloads  
+""")
+
 # =========================
 # Funções utilitárias
 # =========================
@@ -659,17 +669,6 @@ else:
                 "reduzindo distorções em Prefixos muito pequenos."
             )
 
-    # =========================
-    # Índice de Navegação
-    # =========================
-    st.sidebar.markdown("## 📌 Seções do Dashboard")
-    st.sidebar.markdown("""
-    📊 Visão Geral  
-    🍩 Donut EPS  
-    🏷️ Percentual por Prefixo  
-    🧮 Meta de 90%  
-    ⬇️ Consultas e Downloads  
-    """)       
     st.info("""
 **Observações**
 - Entrada **somente CSV**.
