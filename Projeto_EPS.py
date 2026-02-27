@@ -454,18 +454,28 @@ col1, col2 = st.columns(2)
 with col1:
     st.caption("Excel com uma planilha por Prefixo (apenas pendentes).")
     try:
+        cols_to_drop = ["Situacao_Eps", "Status_Indicador"]
+
+        # Criar arquivo em memória
         buf_xlsx_multi = io.BytesIO()
         with pd.ExcelWriter(buf_xlsx_multi, engine="openpyxl") as writer:
             for pref, grp in dados_antes.groupby("Prefixo", dropna=False):
                 sheet = "NA" if pd.isna(pref) else str(pref)[:31]
-                grp.to_excel(writer, sheet_name=sheet, index=False)
-        buf_xlsx_multi.seek(0)
+                # 👇 Remove as colunas antes de gravar
+                grp_export = grp.drop(columns=cols_to_drop, errors="ignore")
+                grp_export.to_excel(writer, sheet_name=sheet, index=False)
+
+        # Extrair bytes do buffer
+        xlsx_bytes_multi = buf_xlsx_multi.getvalue()
+
         st.download_button(
             label="📘 Baixar Excel (1 aba por Prefixo)",
-            data=buf_xlsx_multi,
+            data=xlsx_bytes_multi,
             file_name="dados_pendentes_por_prefixo.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
+            # mime="application/octet-stream",  # 👈 alternativa se seu ambiente insistir em progress.htm
+            use_container_width=True,
+            key="download_por_prefixo"
         )
     except Exception as e:
         st.error(f"Erro ao gerar Excel por Prefixo: {e}")
@@ -473,16 +483,24 @@ with col1:
 with col2:
     st.caption("Excel único (uma aba) com todas as pendências.")
     try:
+        cols_to_drop = ["Situacao_Eps", "Status_Indicador"]
+
         buf_xlsx_single = io.BytesIO()
         with pd.ExcelWriter(buf_xlsx_single, engine="openpyxl") as writer:
-            dados_antes.to_excel(writer, sheet_name="Pendentes", index=False)
-        buf_xlsx_single.seek(0)
+            # 👇 Remove as colunas antes de gravar
+            dados_pend_export = dados_antes.drop(columns=cols_to_drop, errors="ignore")
+            dados_pend_export.to_excel(writer, sheet_name="Pendentes", index=False)
+
+        xlsx_bytes_single = buf_xlsx_single.getvalue()
+
         st.download_button(
             label="📗 Baixar Excel (uma aba)",
-            data=buf_xlsx_single,
+            data=xlsx_bytes_single,
             file_name="dados_pendentes.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
+            # mime="application/octet-stream",  # 👈 alternativa se necessário
+            use_container_width=True,
+            key="download_uma_aba"
         )
     except Exception as e:
         st.error(f"Erro ao gerar Excel único: {e}")
