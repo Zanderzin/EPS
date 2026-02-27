@@ -50,7 +50,7 @@ top_n = DEFAULT_TOP_N
 if uploaded is not None:
     st.sidebar.markdown("## 📌 Seções do Dashboard")
     st.sidebar.markdown("""
-    <a href="#visao-geral" target="_self">📊 Visão Geral</a><br>
+    📊<a href="#visao-geral" target="_self">📊 Visão Geral</a><br>
     <a href="#donut-eps" target="_self">🍩 Gráfico donut</a><br>
     <a href="#consulta-uor" target="_self">🔎 Consulta por UOR</a><br>
     <a href="#downloads" target="_self">⬇️ Downloads</a><br>
@@ -90,7 +90,6 @@ def carregar_dados(file_like, encoding="utf-8", sep=","):
 def preparar_df(df: pd.DataFrame):
     df["Data_Ultimo_Eps"] = pd.to_datetime(df["Data_Ultimo_Eps"], dayfirst=True, errors="coerce")
     return df
-
 
 def download_button_blob(label: str, data_bytes: bytes, filename: str,
                          mime: str = "application/octet-stream",
@@ -134,7 +133,6 @@ def download_button_blob(label: str, data_bytes: bytes, filename: str,
     </script>
     """
     components.html(html, height=60)
-
 
 def mapear_para_2025(d_ui: date) -> date:
     """
@@ -372,8 +370,6 @@ opcoes += [prefixo_to_label[p] for p in sorted(tmp["Prefixo"].dropna().unique(),
 if tmp["Prefixo"].isna().any():
     opcoes.append("NA – NA")
 
-# Selectbox fica no corpo ou na sidebar?
-# Mantive na sidebar, MAS ele só existe após upload (sidebar já está condicional)
 escolha = st.sidebar.selectbox("Filtrar/Destacar por Prefixo – Dependencia", opcoes, index=0)
 
 if escolha == "Todos":
@@ -396,6 +392,7 @@ else:
     porcentagem, total, qtd_antes = calcular_porcentagem_eps(dados, dados_antes, prefixo_escolhido=valor_filtro)
 
 # --- KPIs ---
+st.title("📊 Dashboard EPS")
 st.markdown('<a name="visao-geral"></a>', unsafe_allow_html=True)
 st.divider()
 st.subheader("Visão geral")
@@ -614,7 +611,7 @@ with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
 
     if metodo == "Arredondado":
         df_out = dfm[["Total", "Pendentes", "Meta_90%_Qtd", "Faltam_Ceil"]].rename(
-            columns={"Faltam_Ceil": "Faltam para 90% (ceil)"}
+            columns={"Faltam_Ceil": "Faltam para 90%"}
         )
     else:
         ideal = meta_pct * dfm["Total"] - dfm["Pendentes"]
