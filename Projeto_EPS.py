@@ -5,6 +5,8 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, date
+import base64
+import zipfile
 
 # =========================
 # Configuração da página
@@ -451,57 +453,103 @@ st.subheader("⬇️ Baixar dados das pendências")
 
 col1, col2 = st.columns(2)
 
+cols_to_drop = ["Situacao_Eps", "Status_Indicador"]
+
 with col1:
     st.caption("Excel com uma planilha por Prefixo (apenas pendentes).")
     try:
-        cols_to_drop = ["Situacao_Eps", "Status_Indicador"]
-
-        # Criar arquivo em memória
+        # --- Gera o Excel multi-aba em memória ---
         buf_xlsx_multi = io.BytesIO()
         with pd.ExcelWriter(buf_xlsx_multi, engine="openpyxl") as writer:
             for pref, grp in dados_antes.groupby("Prefixo", dropna=False):
                 sheet = "NA" if pd.isna(pref) else str(pref)[:31]
-                # 👇 Remove as colunas antes de gravar
                 grp_export = grp.drop(columns=cols_to_drop, errors="ignore")
                 grp_export.to_excel(writer, sheet_name=sheet, index=False)
 
-        # Extrair bytes do buffer
         xlsx_bytes_multi = buf_xlsx_multi.getvalue()
 
+        # Opcional: validação do conteúdo (xlsx é um ZIP, começa com 'PK')
+        # st.write("Multi-aba bytes:", len(xlsx_bytes_multi), "Header:", xlsx_bytes_multi[:2])
+
+        # --- Botão de download (MIME genérico) ---
         st.download_button(
             label="📘 Baixar Excel (1 aba por Prefixo)",
             data=xlsx_bytes_multi,
             file_name="dados_pendentes_por_prefixo.xlsx",
-            #mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            mime="application/octet-stream",  # 👈 alternativa se seu ambiente insistir em progress.htm
+            mime="application/octet-stream",  # <- MAIS robusto em alguns ambientes
             use_container_width=True,
-            key="download_por_prefixo"
+            key="download_por_prefixo_v2"
         )
+
+        # --- Fallback 1: ZIP do xlsx (caso progress.htm persista) ---
+        with io.BytesIO() as zip_buf:
+            with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr("dados_pendentes_por_prefixo.xlsx", xlsx_bytes_multi)
+            zip_bytes = zip_buf.getvalue()
+
+        st.download_button(
+            label="📦 (Fallback) Baixar ZIP com o Excel por Prefixo",
+            data=zip_bytes,
+            file_name="dados_pendentes_por_prefixo.zip",
+            mime="application/zip",
+            use_container_width=True,
+            key="download_por_prefixo_zip"
+        )
+
+        # --- Fallback 2: Link base64 (compatível com iframes/Teams/SharePoint) ---
+        b64_multi = base64.b64encode(xlsx_bytes_multi).decode("utf-8")
+        href_multi = (
+            f'<a download="dados_pendentes_por_prefixo.xlsx" '
+            f'href="data:application/octet-stream;base64,{b64_multi}">⬇️ Baixar (via link base64)</a>'
+        )
+        st.markdown(href_multi, unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"Erro ao gerar Excel por Prefixo: {e}")
 
 with col2:
     st.caption("Excel único (uma aba) com todas as pendências.")
     try:
-        cols_to_drop = ["Situacao_Eps", "Status_Indicador"]
-
         buf_xlsx_single = io.BytesIO()
         with pd.ExcelWriter(buf_xlsx_single, engine="openpyxl") as writer:
-            # 👇 Remove as colunas antes de gravar
             dados_pend_export = dados_antes.drop(columns=cols_to_drop, errors="ignore")
             dados_pend_export.to_excel(writer, sheet_name="Pendentes", index=False)
 
         xlsx_bytes_single = buf_xlsx_single.getvalue()
+        # st.write("Uma-aba bytes:", len(xlsx_bytes_single), "Header:", xlsx_bytes_single[:2])
 
         st.download_button(
             label="📗 Baixar Excel (uma aba)",
             data=xlsx_bytes_single,
             file_name="dados_pendentes.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            # mime="application/octet-stream",  # 👈 alternativa se necessário
+            mime="application/octet-stream",  # <- genérico, ajuda evitar progress.htm
             use_container_width=True,
-            key="download_uma_aba"
+            key="download_uma_aba_v2"
         )
+
+        # ZIP fallback
+        with io.BytesIO() as zip_buf:
+            with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr("dados_pendentes.xlsx", xlsx_bytes_single)
+            zip_bytes_single = zip_buf.getvalue()
+
+        st.download_button(
+            label="📦 (Fallback) Baixar ZIP com o Excel (uma aba)",
+            data=zip_bytes_single,
+            file_name="dados_pendentes.zip",
+            mime="application/zip",
+            use_container_width=True,
+            key="download_uma_aba_zip"
+        )
+
+        # Base64 link fallback
+        b64_single = base64.b64encode(xlsx_bytes_single).decode("utf-8")
+        href_single = (
+            f'<a download="dados_pendentes.xlsx" '
+            f'href="data:application/octet-stream;base64,{b64_single}">⬇️ Baixar (via link base64)</a>'
+        )
+        st.markdown(href_single, unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"Erro ao gerar Excel único: {e}")
 
