@@ -50,12 +50,12 @@ top_n = DEFAULT_TOP_N
 if uploaded is not None:
     st.sidebar.markdown("## 📌 Seções do Dashboard")
     st.sidebar.markdown("""
-    📊<a href="#visao-geral" target="_self">📊 Visão Geral</a><br>
-    <a href="#donut-eps" target="_self">🍩 Gráfico donut</a><br>
-    <a href="#consulta-uor" target="_self">🔎 Consulta por UOR</a><br>
-    <a href="#downloads" target="_self">⬇️ Downloads</a><br>
-    <a href="#percentual-prefixo" target="_self">🏷️ Gráfico de barras</a><br>
-    <a href="#meta-90" target="_self">🧮 Tabelas</a><br>
+    📊<a href="#visao-geral" target="_self">Visão Geral</a><br>
+    🍩<a href="#donut-eps" target="_self">Gráfico donut</a><br>
+    🔎<a href="#consulta-uor" target="_self">Consulta por UOR</a><br>
+    ⬇️<a href="#downloads" target="_self">Downloads</a><br>
+    🏷️<a href="#percentual-prefixo" target="_self">Gráfico de barras</a><br>
+    🧮<a href="#meta-90" target="_self">Tabelas</a><br>
     """, unsafe_allow_html=True)
 
     # 👇 Data exibida (somente UI). Não será usada para cálculo.
@@ -314,8 +314,11 @@ if uploaded is None:
     e mostra:
     - Um **gráfico de donut** (vermelho/verde) com o percentual geral;
     - Um **gráfico de barras** com o percentual pendente por **Prefixo**.
+    - **Filtragem** de pendências por **UOR**
+    - **Tabelas** com a quantidade para concluir a meta
+    - Downloads de planilhas 
     """)
-    st.info("👆 Faça upload do dados para começar.")
+    st.info("⬅️ Faça upload do dados para começar.")
     st.stop()
 
 # === Daqui para baixo, SOMENTE quando há upload ===
@@ -634,7 +637,7 @@ with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
         df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
 
     if metodo == "Arredondado":
-        faltam_col = "Faltam para 90% (ceil)"
+        faltam_col = "Faltam para 90%"
         meta_col = "Meta_90%_Qtd"
     else:
         faltam_col = "Faltam para 90% (compensado)"
