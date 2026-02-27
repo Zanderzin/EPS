@@ -6,8 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, date
 import base64
-import zipfile
-import re
+import streamlit.components.v1 as components
 
 # =========================
 # Configuração da página
@@ -92,9 +91,50 @@ def preparar_df(df: pd.DataFrame):
     df["Data_Ultimo_Eps"] = pd.to_datetime(df["Data_Ultimo_Eps"], dayfirst=True, errors="coerce")
     return df
 
-def make_data_url(data_bytes: bytes, mime: str) -> str:
+
+def download_button_blob(label: str, data_bytes: bytes, filename: str,
+                         mime: str = "application/octet-stream",
+                         use_container_width: bool = True, key: str = "dl_blob"):
+    """
+    Renderiza um botão (estilo nativo) que força download via Blob,
+    garantindo o nome de arquivo e alta compatibilidade.
+    """
     b64 = base64.b64encode(data_bytes).decode("utf-8")
-    return f"data:{mime};base64,{b64}"
+    width_style = "width: 100%;" if use_container_width else ""
+    # Estilo neutro (cinza), sem vermelho
+    html = f"""
+    <button id="{key}" style="padding:0.6rem 1rem; {width_style}
+                              border:1px solid #c7c7c7; border-radius:0.5rem;
+                              background:#f4f4f4; color:#222; font-weight:600; cursor:pointer;">
+      {label}
+    </button>
+    <script>
+    (function(){{
+      const btn = document.getElementById("{key}");
+      if (!btn) return;
+      btn.addEventListener("click", function(){{
+        const b64 = "{b64}";
+        const mime = "{mime}";
+        const filename = "{filename}";
+        const binary = atob(b64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], {{type: mime}});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }});
+    }})();
+    </script>
+    """
+    components.html(html, height=60)
+
 
 def mapear_para_2025(d_ui: date) -> date:
     """
@@ -476,15 +516,15 @@ with col1:
         # Opcional: validação do conteúdo (xlsx é um ZIP, começa com 'PK')
         # st.write("Multi-aba bytes:", len(xlsx_bytes_multi), "Header:", xlsx_bytes_multi[:2])
         mime_xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        data_url_multi = make_data_url(xlsx_bytes_multi, mime=mime_xlsx, filename="dados_pendentes_por_prefixo.xlsx")
-
-        # Botões nativos (Streamlit) que apontam para os data URLs
-        st.link_button(
-            "📘 Baixar Excel (1 aba por Prefixo)",
-            url=data_url_multi,
-            use_container_width=True,
-            type="secondary"  # opcional
+        
+        download_button_blob(
+            label="📘 Baixar Excel (1 aba por Prefixo)",
+            data_bytes=xlsx_bytes_multi,
+            filename="dados_pendentes_por_prefixo.xlsx",
+            mime=mime_xlsx,
+            key="dl_multi_blob_neutro"
         )
+
 
     except Exception as e:
         st.error(f"Erro ao gerar Excel por Prefixo: {e}")
@@ -499,14 +539,16 @@ with col2:
 
         xlsx_bytes_single = buf_xlsx_single.getvalue()
         # st.write("Uma-aba bytes:", len(xlsx_bytes_single), "Header:", xlsx_bytes_single[:2])
-        data_url_single = make_data_url(xlsx_bytes_single, mime=mime_xlsx, filename="dados_pendentes.xlsx")
         
-        st.link_button(
-            "📗 Baixar Excel (uma aba)",
-            url=data_url_single,
-            use_container_width=True,
-            type="secondary" 
+        # 🔹 Uma aba — mantém label e nome de arquivo
+        download_button_blob(
+            label="📗 Baixar Excel (uma aba)",
+            data_bytes=xlsx_bytes_single,
+            filename="dados_pendentes.xlsx",
+            mime=mime_xlsx,
+            key="dl_single_blob_neutro"
         )
+
     except Exception as e:
         st.error(f"Erro ao gerar Excel único: {e}")
 
