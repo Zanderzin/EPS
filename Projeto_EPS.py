@@ -316,8 +316,18 @@ if uploaded is None:
     - Um **gráfico de barras** com o percentual pendente por **Prefixo**.
     - **Filtragem** de pendências por **UOR**
     - **Tabelas** com a quantidade para concluir a meta
-    - Downloads de planilhas 
+    - **Downloads** de planilhas 
     """)
+    
+    # 🔗 Adicionar link para o Power BI
+    st.markdown(
+    """
+    🔗 **Os dados oficiais do EPS também podem ser consultados no Power BI:**  
+    👉 [Acessar painel do EPS no Power BI](https://pwbi.intranet.bb.com.br/reports/powerbi/%5bP%C3%BAblica%5d/VICOR/DIPES/Indicadores/Exame%20Peri%C3%B3dico%20de%20Saúde%20(EPS))
+    """,
+    unsafe_allow_html=True
+    )
+
     st.info("⬅️ Faça upload do dados para começar.")
     st.stop()
 
