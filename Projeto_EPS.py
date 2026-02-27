@@ -472,8 +472,8 @@ with col1:
             label="📘 Baixar Excel (1 aba por Prefixo)",
             data=xlsx_bytes_multi,
             file_name="dados_pendentes_por_prefixo.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            # mime="application/octet-stream",  # 👈 alternativa se seu ambiente insistir em progress.htm
+            #mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            mime="application/octet-stream",  # 👈 alternativa se seu ambiente insistir em progress.htm
             use_container_width=True,
             key="download_por_prefixo"
         )
