@@ -7,6 +7,7 @@ import plotly.express as px
 from datetime import datetime, date
 import base64
 import zipfile
+import re
 
 # =========================
 # Configuração da página
@@ -91,6 +92,57 @@ def preparar_df(df: pd.DataFrame):
     df["Data_Ultimo_Eps"] = pd.to_datetime(df["Data_Ultimo_Eps"], dayfirst=True, errors="coerce")
     return df
 
+def download_button_base64(data_bytes: bytes, filename: str, label: str,
+                           mime: str = "application/octet-stream",
+                           key: str | None = None,
+                           color: str = "#2e7d32",  # verde
+                           color_hover: str = "#1b5e20") -> None:
+    """
+    Renderiza um botão de download (estilo Streamlit) usando data:URL base64.
+    - data_bytes: conteúdo do arquivo em bytes
+    - filename: nome sugerido para salvar
+    - label: texto do botão (ex.: "Baixar Excel")
+    - mime: content-type do arquivo (xlsx -> application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+    - key: id único opcional (se None, deriva do filename)
+    - color/color_hover: personalização simples de cor
+    """
+    if not isinstance(data_bytes, (bytes, bytearray)):
+        raise TypeError("data_bytes deve ser bytes/bytearray")
+
+    b64 = base64.b64encode(data_bytes).decode("utf-8")
+    href = f"data:{mime};base64,{b64}"
+
+    # id único e válido para o CSS
+    button_id = re.sub(r"[^a-zA-Z0-9_-]", "", (key or filename or "dl")).strip() or "dl"
+
+    css = f"""
+    <style>
+      /* Botão base64 custom */
+      #{button_id} {{
+        background-color: {color};
+        color: white;
+        padding: 0.6rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out;
+      }}
+      #{button_id}:hover {{
+        background-color: {color_hover};
+        text-decoration: none;
+      }}
+    </style>
+    """
+
+    html = f'''
+      {css}
+      <a id="{button_id}" href="{href}" download="{filename}">{label}</a>
+    '''
+    st.markdown(html, unsafe_allow_html=True)
+    
 def mapear_para_2025(d_ui: date) -> date:
     """
     Recebe a data exibida (UI), normalmente em 2026,
@@ -471,39 +523,16 @@ with col1:
         # Opcional: validação do conteúdo (xlsx é um ZIP, começa com 'PK')
         # st.write("Multi-aba bytes:", len(xlsx_bytes_multi), "Header:", xlsx_bytes_multi[:2])
 
-        # --- Botão de download (MIME genérico) ---
-        st.download_button(
+        # Depois que você gerar xlsx_bytes_multi...
+        download_button_base64(
+            data_bytes=xlsx_bytes_multi,
+            filename="dados_pendentes_por_prefixo.xlsx",
             label="📘 Baixar Excel (1 aba por Prefixo)",
-            data=xlsx_bytes_multi,
-            file_name="dados_pendentes_por_prefixo.xlsx",
-            mime="application/octet-stream",  # <- MAIS robusto em alguns ambientes
-            use_container_width=True,
-            key="download_por_prefixo_v2"
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="dl_por_prefixo_btn",
+            color="#2962ff",        # azul (opcional)
+            color_hover="#0039cb"   # azul escuro (opcional)
         )
-
-        # --- Fallback 1: ZIP do xlsx (caso progress.htm persista) ---
-        with io.BytesIO() as zip_buf:
-            with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-                zf.writestr("dados_pendentes_por_prefixo.xlsx", xlsx_bytes_multi)
-            zip_bytes = zip_buf.getvalue()
-
-        st.download_button(
-            label="📦 (Fallback) Baixar ZIP com o Excel por Prefixo",
-            data=zip_bytes,
-            file_name="dados_pendentes_por_prefixo.zip",
-            mime="application/zip",
-            use_container_width=True,
-            key="download_por_prefixo_zip"
-        )
-
-        # --- Fallback 2: Link base64 (compatível com iframes/Teams/SharePoint) ---
-        b64_multi = base64.b64encode(xlsx_bytes_multi).decode("utf-8")
-        href_multi = (
-            f'<a download="dados_pendentes_por_prefixo.xlsx" '
-            f'href="data:application/octet-stream;base64,{b64_multi}">⬇️ Baixar (via link base64)</a>'
-        )
-        st.markdown(href_multi, unsafe_allow_html=True)
-
     except Exception as e:
         st.error(f"Erro ao gerar Excel por Prefixo: {e}")
 
@@ -527,28 +556,28 @@ with col2:
             key="download_uma_aba_v2"
         )
 
-        # ZIP fallback
-        with io.BytesIO() as zip_buf:
-            with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-                zf.writestr("dados_pendentes.xlsx", xlsx_bytes_single)
-            zip_bytes_single = zip_buf.getvalue()
+        # # ZIP fallback
+        # with io.BytesIO() as zip_buf:
+        #     with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        #         zf.writestr("dados_pendentes.xlsx", xlsx_bytes_single)
+        #     zip_bytes_single = zip_buf.getvalue()
 
-        st.download_button(
-            label="📦 (Fallback) Baixar ZIP com o Excel (uma aba)",
-            data=zip_bytes_single,
-            file_name="dados_pendentes.zip",
-            mime="application/zip",
-            use_container_width=True,
-            key="download_uma_aba_zip"
-        )
+        # st.download_button(
+        #     label="📦 (Fallback) Baixar ZIP com o Excel (uma aba)",
+        #     data=zip_bytes_single,
+        #     file_name="dados_pendentes.zip",
+        #     mime="application/zip",
+        #     use_container_width=True,
+        #     key="download_uma_aba_zip"
+        # )
 
-        # Base64 link fallback
-        b64_single = base64.b64encode(xlsx_bytes_single).decode("utf-8")
-        href_single = (
-            f'<a download="dados_pendentes.xlsx" '
-            f'href="data:application/octet-stream;base64,{b64_single}">⬇️ Baixar (via link base64)</a>'
-        )
-        st.markdown(href_single, unsafe_allow_html=True)
+        # # Base64 link fallback
+        # b64_single = base64.b64encode(xlsx_bytes_single).decode("utf-8")
+        # href_single = (
+        #     f'<a download="dados_pendentes.xlsx" '
+        #     f'href="data:application/octet-stream;base64,{b64_single}">⬇️ Baixar (via link base64)</a>'
+        # )
+        # st.markdown(href_single, unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Erro ao gerar Excel único: {e}")
