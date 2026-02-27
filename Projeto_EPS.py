@@ -92,13 +92,9 @@ def preparar_df(df: pd.DataFrame):
     df["Data_Ultimo_Eps"] = pd.to_datetime(df["Data_Ultimo_Eps"], dayfirst=True, errors="coerce")
     return df
 
-
-def make_data_url(xlsx_bytes: bytes, mime: str, filename: str) -> str:
-    b64 = base64.b64encode(xlsx_bytes).decode("utf-8")
-    # Alguns navegadores ignoram 'download' no data:URL, mas muitos respeitam.
-    # O nome do arquivo ainda pode ser sugerido pelo próprio navegador.
+def make_data_url(data_bytes: bytes, mime: str) -> str:
+    b64 = base64.b64encode(data_bytes).decode("utf-8")
     return f"data:{mime};base64,{b64}"
-
 
 def mapear_para_2025(d_ui: date) -> date:
     """
@@ -487,7 +483,7 @@ with col1:
             "📘 Baixar Excel (1 aba por Prefixo)",
             url=data_url_multi,
             use_container_width=True,
-            type="primary"  # opcional
+            type="secondary"  # opcional
         )
 
     except Exception as e:
@@ -508,7 +504,8 @@ with col2:
         st.link_button(
             "📗 Baixar Excel (uma aba)",
             url=data_url_single,
-            use_container_width=True
+            use_container_width=True,
+            type="secondary" 
         )
     except Exception as e:
         st.error(f"Erro ao gerar Excel único: {e}")
