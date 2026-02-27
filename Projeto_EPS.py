@@ -602,8 +602,7 @@ with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
     dfm = pd.DataFrame(index=idx)
     dfm["Total"] = totais.reindex(idx).fillna(0).astype(int)
     dfm["Pendentes"] = antes.reindex(idx).fillna(0).astype(int)
-    dfm["%Pendentes"] = (dfm["Pendentes"] / dfm["Total"] * 100).replace([np.inf, -np.inf], 0).fillna(0)
-
+    
     metodo = st.radio(
         "Como calcular a coluna **Faltam para 90%**?",
         ["Arredondado", "Compensado (maior resto)"],
@@ -614,7 +613,7 @@ with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
     dfm["Faltam_Ceil"] = (dfm["Meta_90%_Qtd"] - dfm["Pendentes"]).clip(lower=0).astype(int)
 
     if metodo == "Arredondado":
-        df_out = dfm[["Total", "Pendentes", "%Pendentes", "Meta_90%_Qtd", "Faltam_Ceil"]].rename(
+        df_out = dfm[["Total", "Pendentes", "Meta_90%_Qtd", "Faltam_Ceil"]].rename(
             columns={"Faltam_Ceil": "Faltam para 90% (ceil)"}
         )
     else:
@@ -633,7 +632,7 @@ with st.expander("🧮 Tabelas de contagem (totais e pendentes)"):
                 extra.loc[idx_pref] += 1
         faltam_comp = (base + extra).astype(int).clip(lower=0)
 
-        df_out = dfm[["Total", "Pendentes", "%Pendentes"]].copy()
+        df_out = dfm[["Total", "Pendentes"]].copy()
         df_out["Meta_90%_Qtd (compensado)"] = (df_out["Pendentes"] + faltam_comp).astype(int)
         df_out["Faltam para 90% (compensado)"] = faltam_comp.astype(int)
 
