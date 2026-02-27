@@ -328,7 +328,7 @@ if uploaded is None:
     unsafe_allow_html=True
     )
 
-    st.info("⬅️ Faça upload do dados para começar.")
+    st.info("⬅️ Faça upload do dados para começar. Lembre-se que eles devem estar no formato CSV.")
     st.stop()
 
 # === Daqui para baixo, SOMENTE quando há upload ===
