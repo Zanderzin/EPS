@@ -331,10 +331,10 @@ if uploaded is None:
     with st.expander("Passo a passo"): 
     # Liste as URLs das imagens (use o caminho 'raw' do GitHub)
         image_urls = [
-            "https://github.com/Zanderzin/EPS/blob/main/assets/exportar_dados.png",
-            "https://github.com/Zanderzin/EPS/blob/main/assets/tres_pontinhos.png",
-            "https://github.com/Zanderzin/EPS/blob/main/assets/selecionar_csv.png",
-            "https://github.com/Zanderzin/EPS/blob/main/assets/visao_geral.png",
+            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/exportar_dados.png",
+            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/tres_pontinhos.png",
+            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/selecionar_csv.png",
+            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/visao-prefixo.png",
         ]
 
         # Opção A: Mostrar em 2 colunas (2x2)
