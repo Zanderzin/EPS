@@ -328,27 +328,37 @@ if uploaded is None:
     unsafe_allow_html=True
     )
 
+    st.markdown(
+        """
+        <style>
+        .passo-caption {
+            color: #000000 !important;      /* preto */
+            font-weight: 600;               /* semibold */
+            margin: 6px 0 18px 0;           /* respiro entre imagens */
+        }
+        /* opcional: remover a cor acinzentada padrão de captions do tema */
+        .stCaption, .stCaption p { color: #000000 !important; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     with st.expander("Passo a passo"): 
-    # Liste as URLs das imagens (use o caminho 'raw' do GitHub)
-        image_urls = [
-            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/exportar_dados.png",
-            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/tres_pontinhos.png",
-            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/selecionar_csv.png",
-            "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/visao-prefixo.png",
+        passo1 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/visao-prefixo.png"
+        passo2 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/tres_pontinhos.png"
+        passo3 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/exportar_dados.png"
+        passo4 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/selecionar_csv.png"
+
+        ordered = [
+            ("Passo 1", passo1),
+            ("Passo 2", passo2),
+            ("Passo 3", passo3),
+            ("Passo 4", passo4),
         ]
 
-        # Opção A: Mostrar em 2 colunas (2x2)
-        cols = st.columns(2)
-        for i, url in enumerate(image_urls):
-            with cols[i % 2]:
-                st.image(url, caption=f"Passo {i+1}", use_container_width=True)
-
-        # --- Se preferir tudo em uma linha (4 colunas):
-        # cols = st.columns(4)
-        # for i, url in enumerate(image_urls):
-        #     with cols[i]:
-        #         st.image(url, caption=f"Passo {i+1}", use_container_width=True)
-
+        for caption, url in ordered:
+                st.image(url, use_container_width=True)
+                st.markdown(f"<div class='passo-caption'>{caption}</div>", unsafe_allow_html=True)
 
     st.info("⬅️ Faça upload do dados para começar. Lembre-se que eles devem estar no formato CSV.")
     st.stop()
