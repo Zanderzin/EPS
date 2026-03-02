@@ -18,18 +18,18 @@ st.set_page_config(
 )
 
 # Oculta menu, footer, barra superior do Streamlit Cloud e qualquer badge/link do GitHub
-HIDE_DECORATIONS = """
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-div[data-testid="stToolbar"] {visibility: hidden; height: 0;}
-div[data-testid="stStatusWidget"] {display: none;}
-div[data-testid="stDecoration"] {display: none;}
-.viewerBadge_link__qRh6M {display: none !important;}
-a[href*="github.com"] {display: none !important;}
-</style>
-"""
-st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
+# HIDE_DECORATIONS = """
+# <style>
+# #MainMenu {visibility: hidden;}
+# footer {visibility: hidden;}
+# div[data-testid="stToolbar"] {visibility: hidden; height: 0;}
+# div[data-testid="stStatusWidget"] {display: none;}
+# div[data-testid="stDecoration"] {display: none;}
+# .viewerBadge_link__qRh6M {display: none !important;}
+# a[href*="github.com"] {display: none !important;}
+# </style>
+# """
+# st.markdown(HIDE_DECORATIONS, unsafe_allow_html=True)
 
 # Defaults (UI x Cálculo)
 # Defaults (UI x Cálculo base)
