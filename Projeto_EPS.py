@@ -12,7 +12,7 @@ import streamlit.components.v1 as components
 # Configuração da página
 # =========================
 st.set_page_config(
-    page_title="Dashboard EPS - Prefixos",
+    page_title="Dashboard EPS",
     page_icon="📊",
     layout="wide"
 )
@@ -327,6 +327,28 @@ if uploaded is None:
     """,
     unsafe_allow_html=True
     )
+
+    with st.expander("Passo a passo"): 
+    # Liste as URLs das imagens (use o caminho 'raw' do GitHub)
+        image_urls = [
+            "https://github.com/Zanderzin/EPS/blob/main/assets/exportar_dados.png",
+            "https://github.com/Zanderzin/EPS/blob/main/assets/tres_pontinhos.png",
+            "https://github.com/Zanderzin/EPS/blob/main/assets/selecionar_csv.png",
+            "https://github.com/Zanderzin/EPS/blob/main/assets/visao_geral.png",
+        ]
+
+        # Opção A: Mostrar em 2 colunas (2x2)
+        cols = st.columns(2)
+        for i, url in enumerate(image_urls):
+            with cols[i % 2]:
+                st.image(url, caption=f"Passo {i+1}", use_container_width=True)
+
+        # --- Se preferir tudo em uma linha (4 colunas):
+        # cols = st.columns(4)
+        # for i, url in enumerate(image_urls):
+        #     with cols[i]:
+        #         st.image(url, caption=f"Passo {i+1}", use_container_width=True)
+
 
     st.info("⬅️ Faça upload do dados para começar. Lembre-se que eles devem estar no formato CSV.")
     st.stop()
