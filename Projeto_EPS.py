@@ -357,8 +357,8 @@ if uploaded is None:
         ]
 
         for caption, url in ordered:
-                st.image(url, use_container_width=True)
                 st.markdown(f"<div class='passo-caption'>{caption}</div>", unsafe_allow_html=True)
+                st.image(url, use_container_width=True)
 
     st.info("⬅️ Faça upload do dados para começar. Lembre-se que eles devem estar no formato CSV.")
     st.stop()
