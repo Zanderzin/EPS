@@ -181,7 +181,7 @@ def donut_eps_plotly(
                 text=filtro_texto,
                 x=0.5, y=0.5,
                 showarrow=False,
-                font=dict(size=30, color="#7c7c7c", family="Arial Black")
+                font=dict(size=30, color="#7c7c7c", family="Source Sans")
             )
         ],
         margin=dict(l=40, r=40, t=60, b=40)
@@ -345,15 +345,17 @@ if uploaded is None:
 
     with st.expander("Passo a passo"): 
         passo1 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/visao-prefixo.png"
-        passo2 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/tres_pontinhos.png"
-        passo3 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/exportar_dados.png"
-        passo4 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/selecionar_csv.png"
+        passo2 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/dijur.png"
+        passo3 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/tres_pontinhos.png"
+        passo4 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/exportar_dados.png"
+        passo5 = "https://raw.githubusercontent.com/Zanderzin/EPS/refs/heads/main/assets/selecionar_csv.png"
 
         ordered = [
             ("Passo 1", passo1),
             ("Passo 2", passo2),
             ("Passo 3", passo3),
             ("Passo 4", passo4),
+            ("Passo 4", passo5),
         ]
 
         for caption, url in ordered:
